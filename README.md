@@ -2,25 +2,65 @@
   <img src="docs/images/banner.png" alt="百变麦小薯 · 贝雷帽 / 背包 / 薯条 / 挎包 四种造型" width="100%">
 </p>
 
-# 百变麦小薯 · 会变身的麦当劳优惠蹲点机器人
+<h1 align="center">百变麦小薯</h1>
 
-![Python](docs/images/badges/python.svg)
-![MCP](docs/images/badges/mcp.svg)
-![License](docs/images/badges/license.svg)
-![Deploy](docs/images/badges/cloudflare.svg)
-![WorkBuddy](docs/images/badges/workbuddy.svg)
+<p align="center">
+  <b>住在你微信里的麦当劳优惠蹲点搭子 · 性格由你捏</b>
+</p>
 
-> 一只住在你微信里的「优惠蹲点员」：你只管说爱吃什么，它 7×24 替你盯着麦当劳官方优惠，
-> 蹲到了第一时间**图文播报**推到你微信，还能一句话帮你把券领进卡包。
-> 她还会「变身」——说一句「变身 月野兔」，她就变成你爱的那个动漫角色陪你聊。
+<p align="center">
+  <img src="docs/images/badges/python.svg" alt="Python">
+  <img src="docs/images/badges/mcp.svg" alt="MCP">
+  <img src="docs/images/badges/license.svg" alt="MIT">
+  <img src="docs/images/badges/cloudflare.svg" alt="Cloudflare Tunnel">
+  <img src="docs/images/badges/workbuddy.svg" alt="WorkBuddy">
+</p>
 
-**🌐 在线体验**：<https://aiunclehouse.com> ｜ 抽卡屋 / MCP Token 开通向导 / 一键绑定微信
+<p align="center">
+  🌐 <b>在线体验（真机运行中）</b>：<a href="https://aiunclehouse.com">aiunclehouse.com</a><br>
+  抽卡 → 开通 → 微信绑定，三分钟就能领一只自己的麦小薯
+</p>
 
-麦当劳程序员节创意开发大赛参赛作品 · 基于[麦当劳官方 MCP](https://open.mcd.cn/mcp) 构建 · 全程使用腾讯 WorkBuddy 开发
+<p align="center">
+  <sub>麦当劳程序员节创意开发大赛参赛作品 · 基于<a href="https://open.mcd.cn/mcp">麦当劳官方 MCP</a> 构建 · 全程使用腾讯 WorkBuddy 开发</sub>
+</p>
 
 ---
 
-## 实际效果（微信实测截图）
+## ⚙️ 30 秒看懂技术栈
+
+| 层 | 选型 | 干什么 |
+|---|---|---|
+| 数据 | **麦当劳官方 MCP**（35 个工具） | 券池/活动日历/找店/查菜单/算价/领券，全是真实接口 |
+| 大脑 | **智谱 GLM-5.3-flash** Function Calling | 自主编排「找店→查菜单→算价」工具链 |
+| 通道 | **微信 iLink（ClawBot）**· octop-gateway | 长轮询收消息、图文推送、语音转文字 |
+| 人格 | SOUL.md + 梗库 + SQLite 长期记忆 | 记得你爱吃什么、在不在减肥 |
+| 变身 | **萌娘百科 API + GLM 蒸馏** | 任意动漫角色，消歧确认后换人格 |
+| 网站 | FastAPI + 原生 HTML/JS（3D 卡柱纯手写 CSS） | 落地页 / 抽卡屋 / 开通向导 / 管理台 |
+| 部署 | Cloudflare Tunnel | 一台普通电脑即可公网上线，无需服务器 |
+
+> 💝 **诚意说明**：在线体验站的 AI 对话用的是作者自掏腰包的 GLM API，
+> 每位访客每天 100 轮免费额度（防滥用，正常聊天根本用不完）。
+
+---
+
+## 🍟 她是怎样的存在
+
+**🎭 性格，由你决定** —— 说一句「变身 明日香」，她就变成你爱的那个动漫角色：
+傲娇的、元气的、毒舌的，语气口癖全对上。看腻了？「变回来」就好。
+
+**👀 优惠，替你蹲着** —— 你只管说爱吃什么，她 7×24 盯官方券池，
+麦香鱼一有优惠，微信第一时间**图文播报**（带官方券图），还能一键领进卡包。
+
+**💬 无聊，陪你解闷** —— 吐槽老板、汇报摸鱼、分享离谱事她都接得住。
+每天聊满两轮算打卡，累计 1 / 2 / 4 / 6 / 8 天解锁新造型卡。
+
+**🧠 喜好，记在心上** —— 你吃不吃辣、雪糕爱香草还是抹茶、咖啡要冰美式还是热拿铁，
+聊过的她都记得，推荐句句量身挑。你随时可以问「你记得我什么」，也可以让她「忘掉 xx」。
+
+---
+
+## 📱 实际效果（微信实测）
 
 **蹲到优惠 → 图文播报（文字 + 官方券图）：**
 
@@ -32,16 +72,27 @@
 
 > 截图中涉及个人位置与门店详址的部分已裁剪处理。
 
-## 抽卡屋：把「百变」做成看得见的东西
+---
+
+## 🎴 抽卡屋：把「百变」做成看得见的东西
 
 ![抽卡屋](docs/images/gacha.png)
 
-在微信里跟麦小薯聊满两轮就算一次打卡，累计打卡 1 / 2 / 4 / 6 / 8 天各解锁一张新造型卡。
-第一次进抽卡屋有新手保护，随手点一张必出薯条妹——先给点甜头，再慢慢解锁。
-
+第一次进抽卡屋有新手保护，随手点一张必出薯条妹；之后靠打卡解锁更多造型。
 四张卡对应四种工作状态，她会按当前在干什么自动换头像：贝雷帽=闲聊 / 背包=查询 / 薯条=推荐 / 挎包=异常兜底。
 
-## 变身：一句话换个人格
+<p align="center">
+  <img src="docs/images/cards/01_fish_beret.png" width="22%" alt="麦香鱼·贝雷帽">
+  <img src="docs/images/cards/02_bigmac_backpack.png" width="22%" alt="巨无霸·双肩包">
+  <img src="docs/images/cards/03_fries_hand.png" width="22%" alt="薯条·手捧">
+  <img src="docs/images/cards/04_chicken_bag.png" width="22%" alt="麦乐鸡·小挎包">
+</p>
+
+<p align="center"><sub>麦香鱼·贝雷帽 ｜ 巨无霸·双肩包 ｜ 薯条·手捧 ｜ 麦乐鸡·小挎包</sub></p>
+
+---
+
+## 🎭 变身：一句话换个人格
 
 发「你当一下明日香」，她会真的去查资料、列出同名角色让你确认，确认后才变身——
 不是硬编码的角色表，而是模型自己检索、自己判断该选哪一个。以下是本地运行的真实输出：
@@ -59,159 +110,54 @@
           确认是 TA 就回「对」，我马上变身～
 
 >>> 用户：对
-<<< 麦小薯：收到！开始研究 惣流·明日香·兰格雷 的说话方式……🎭
-<<< 麦小薯：✨ 变身完成！从现在起我就是：惣流·明日香·兰格雷
-          【性格】① 高傲强势，争强好胜 ② 内心脆弱，掩饰不安 ③ 天才神童，暴躁易怒
+<<< 麦小薯：✨ 变身完成！从现在起我就是：惣流·明日香·兰格雷（《新世纪福音战士》）
+          【性格】高傲强势、嘴硬逞强
           【口头禅】「你白痴啊？（あんたバカァ？）」
-          【说话风格】语气高亢张扬，爱嘲讽反问，受挫时易炸毛
-          想让我变回麦小薯，随时发「变回来」～
+
+>>> 用户：我不想上班
+<<< 麦小薯（明日香）：哈？不想上班就不上，你白痴啊？🤨
+          ……不过嘛，中午点个随心配 1+1 犒劳自己，下午才有力气继续被压榨嘛。
 ```
 
-「变身 / 换头像造型 / 记住称呼」这三件事都被注册成了模型可调用的**本地工具**
-（`cosplay-become` / `switch-avatar` / `remember-nickname`），
-所以它自己判断「这句话该调哪个」，而不是靠正则一条条猜。
-一句话里同时说两件事也能全办——先按连接词机械切句，脚本认识的直接秒回，没吃掉的交给模型。
-
-## 它解决什么问题？
-
-麦当劳官方的优惠券 / 活动其实很香（单品买一送一、免费脆薯饼、9.9 早餐两件套……），
-但**没人有功夫天天刷 App 看有没有上新**，等刷到的时候券常常已经没了。
-
-「麦小薯」把这件事自动化了：
-
-- 👀 **精准蹲点**：只盯你关注的产品（麦香鱼、薯条、板烧……），有优惠立刻推送到微信，别的噪音一律不打扰
-- 🖼️ **图文播报**：推送直接带官方优惠券配图，券长什么样、划不划算，一眼看清
-- 🎟️ **一键领券**：微信里回一句「领券」，当前所有可领优惠券立刻塞满你的卡包
-- 💬 **随问随答**：「麦香鱼多少钱」「轻轨站附近有店吗」「我多少积分」——
-  它通过 Function Calling 实时调用官方数据回答，不用打开 App
-- 🍟 **有活人感**：它有名字、有口癖、会报喜会卖萌，蹲点失败了会自己去"后厨"想办法
-- 🎭 **会变身**：说「变身 月野兔」就变成你爱的那个角色，语气口癖全对上，还能随时「变回来」
-- 🎴 **会打卡换装**：每天聊满两轮算打卡，累计解锁新造型卡，集齐 12 张皮肤
-- 🧠 **会记事**：你说过的忌口、爱喝什么、希望怎么被称呼，聊过的她都记得
-
-## 目标用户
-
-- 爱吃麦当劳、但懒得天天刷 App 找优惠的人
-- 只想蹲特定单品优惠（比如只爱麦香鱼），不想被全量营销信息轰炸的人
-- 微信重度用户：所有交互都在微信对话里完成，不用装任何新 App
-
-## 系统架构
-
-```
-┌──────────────┐   微信对话    ┌─────────────────────────────────────┐
-│   用户微信    │ ◀──────────▶ │  微信 ClawBot 通道（iLink 长轮询，    │
-│ （ClawBot）   │   图文消息    │  无需公网 IP，支持文字+图片推送）      │
-└──────────────┘              └──────────────┬──────────────────────┘
-                                             │
-                              ┌──────────────▼──────────────┐
-                              │        麦小薯大脑             │
-                              │  · 指令路由（关注/取消/领券…） │
-                              │  · GLM-5.3-Flash 工具代理      │
-                              │    代理（自主决策调 MCP 工具） │
-                              │  · 定时扫描 + 关键词命中去重   │
-                              └──────┬───────────────┬──────┘
-                                     │ MCP (HTTP/SSE) │ LLM API
-                       ┌─────────────▼──────┐   ┌─────▼──────┐
-                       │  麦当劳官方 MCP      │   │  智谱 GLM   │
-                       │  mcp.mcd.cn         │   │  glm-5.3   │
-                       └────────────────────┘   └────────────┘
-┌──────────────┐
-│  FastAPI 网站 │  落地页 / MCP Token 申请向导 / 关注配置 / 扫码绑定
-└──────────────┘
-```
-
-## 快速开始
-
-### 前置条件
-
-- Python 3.10+，Node.js（仅用于 `npm run dev` 启动网站）
-- 麦当劳 MCP Token：到 [open.mcd.cn/mcp](https://open.mcd.cn/mcp) 注册并创建（免费，需本人手机号）
-- 智谱 AI API Key（可选，用于自由聊天与智能查价）：[open.bigmodel.cn](https://open.bigmodel.cn)
-
-### 安装
-
-```bash
-git clone <your-repo-url>
-cd mcd-coupon-watchdog
-python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # macOS / Linux
-pip install -r requirements.txt
-```
-
-### 配置（只用环境变量，仓库零密钥）
-
-```bash
-cp .env.example .env
-# 编辑 .env，填入：
-#   MCD_MCP_TOKEN=你的麦当劳MCP Token
-#   ZHIPU_API_KEY=你的智谱API Key（可选）
-#   ZHIPU_MODEL=glm-5.3-flash
-```
-
-MCP 配置模板见 [`mcp-config.example.json`](./mcp-config.example.json)。
-
-### 运行
-
-```bash
-# 1. 微信扫码绑定 ClawBot（首次，凭证存本地 claw_credentials.json，已 gitignore）
-python scripts/bind_wechat.py
-
-# 2. 启动常驻服务（微信收发 + 每 30 分钟蹲点扫描 + 图文播报）
-python scripts/daemon.py
-
-# 3. 启动网站（落地页 / Token 向导 / 扫码绑定页）
-npm run dev -- --port 7100
-```
-
-### 微信里的用法
-
-| 你发 | 麦小薯回 |
-|---|---|
-| `关注 麦香鱼` | ✅ 已关注，有优惠立刻喊你 |
-| `查券` | 立刻扫一遍当前可领券+活动，命中即图文播报 |
-| `领券` | 一键把全部可领券领进你的卡包 |
-| `麦香鱼多少钱？我在中山轻轨站附近` | 自主调 MCP：找店→查菜单→算价，报真实价格 |
-| `清单` / `取消 薯条` / `帮助` | 管理你的关注清单 |
-
-## 项目结构
-
-```
-mcd-coupon-watchdog/
-├── src/maimai_watchdog/
-│   ├── mcp_client.py    # 麦当劳 MCP 客户端（JSON-RPC + SSE）
-│   ├── monitor.py       # 蹲点核心：解析券/活动+配图、关键词命中
-│   ├── agent.py         # GLM Function Calling 代理（9 个 MCP 工具 + 3 个本地工具）
-│   ├── chat.py          # 微信指令路由（复合句切分 + 脚本快通道 + 模型兜底）
-│   ├── cosplay.py       # 角色资料检索与变身
-│   ├── channel_claw.py  # 微信 iLink 通道（文字+图片推送）
-│   ├── webapp.py        # FastAPI 网站后端
-│   ├── static/          # 落地页 + 开通向导 + 抽卡屋
-│   └── db.py            # SQLite：用户(加密Token)/规则/去重/配额/绑定码
-├── scripts/
-│   ├── daemon.py        # 常驻服务
-│   ├── bind_wechat.py   # 微信扫码绑定
-│   └── make_web_variants.py  # 由母版派生四套 WebP 响应式图片
-├── assets/avatar/           # 角色形象母版原图（4 竖版 + 4 微信方图）
-├── docs/images/             # README 配图（横幅 / 抽卡屋 / 微信实测 / 徽章）
-├── CONTEST_DECLARATION.md   # 参赛声明（官方原文，未改动）
-├── MCP_INTEGRATION.md       # MCP 接入说明
-└── workbuddy.md             # WorkBuddy 开发对话记录（系统开发 + 形象制作）
-```
-
-## 安全与合规
-
-- 所有 Token / API Key 仅通过环境变量注入，仓库内零明文密钥
-- 用户 MCP Token 在数据库中以 Fernet 对称加密存储
-- 写操作（领券）必须由用户明确指令触发，机器人绝不擅自执行
-- 微信推送仅发送给用户本人主动绑定的会话
-- 项目内不含真实姓名、联系方式与精确地理位置
-- 角色形象为原创设计，不含任何品牌标识（详见 [`assets/avatar/README.md`](assets/avatar/README.md)）
-
-## 开源协议
-
-MIT（第三方组件许可见其各自声明：octop-gateway MIT）
+变身后语气全面切换（傲娇连发），但麦当劳的本职永远在线——查价、领券、蹲优惠一个不落。
 
 ---
 
-> 本项目为麦当劳程序员创意开发大赛参赛作品，由参赛者独立开发，非麦当劳官方产品。
+## 🏗️ 架构一览
+
+```text
+用户微信 ⇄ 微信 iLink (ClawBot) ⇄ daemon.py（常驻守护）
+                                      ├─ 指令层（脚本，毫秒响应）：关注/查券/领券/打卡/变身流程
+                                      ├─ GLM 层（自由问答）：SOUL人格 + 长期记忆 + MCP工具链
+                                      ├─ 变身引擎：萌娘百科检索 → 消歧确认 → GLM蒸馏人设卡
+                                      └─ 定时扫券：关键词命中 → 微信图文播报（券图自动压缩）
+
+浏览器 ⇄ FastAPI 网站
+          ├─ /        落地页      ├─ /gacha    3D 抽卡屋
+          ├─ /onboard 开通向导    └─ /admin    运营管理台
+
+数据库：SQLite（用户 MCP Token 以 Fernet 加密存储，密钥不入库不进仓库）
+```
+
+## 🚀 快速开始
+
+```bash
+python -m venv .venv && .venv/Scripts/activate      # Windows
+pip install -r requirements.txt
+cp .env.example .env   # 填入你的 MCP Token 和智谱 API Key
+python scripts/bind_wechat.py                        # 微信扫码绑定 ClawBot
+python scripts/daemon.py                             # 启动机器人
+uvicorn maimai_watchdog.webapp:app --app-dir src --port 7100   # 启动网站
+```
+
+详细部署与踩坑记录见 [部署交接.md](部署交接.md) ｜ MCP 接入说明：[MCP_INTEGRATION.md](MCP_INTEGRATION.md)
+
+## 📄 参赛声明与许可
+
+[参赛声明](CONTEST_DECLARATION.md)（官方模板原文，未改动）｜ 代码以 [MIT License](LICENSE) 开源
+
+---
+
+<p align="center">
+  <sub>用 🍟 和 ❤️ 做的 · 百变麦小薯 · 觉得好玩就点颗 ⭐ 吧</sub>
+</p>
