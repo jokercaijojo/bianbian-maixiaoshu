@@ -1,0 +1,26 @@
+.env
+__pycache__/
+*.pyc
+node_modules/
+dist/
+build/
+*.db
+*.sqlite3
+logs/
+*.log
+.vscode/
+.idea/
+
+# Claw 凭证与绑定状态（绝不入库）
+claw_credentials.json
+claw_subjects.json
+claw_bind_qr.png
+.venv/
+watchdog.db
+# WAL 模式产生的旁路文件，同样含真实数据，必须忽略
+*.db-wal
+*.db-shm
+*.db-journal
+
+# 内部运维交接文档（写给接手部署的人，不属于参赛作品内容）
+*交接*.md

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>开通百变麦小薯</title>
+<!-- 返回首页提速：看页面时就在后台把首页拉好并预渲染，
+     点「← 返回首页」基本秒开，不再等 1-2 秒网络往返 -->
+<link rel="prefetch" href="/">
+<script type="speculationrules">
+{"prefetch":[{"source":"list","urls":["/"],"eagerness":"eager"}],
+ "prerender":[{"source":"list","urls":["/"],"eagerness":"eager"}]}
+</script>
+<style>
+  :root { --red:#DA291C; --yellow:#FFC72C; --dark:#27251F; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+         background:#FFFAF0; color:var(--dark); }
+  .wrap { max-width:680px; margin:0 auto; padding:32px 20px 64px; }
+  .back { color:var(--red); text-decoration:none; font-size:14px; }
+  h1 { font-size:26px; margin:16px 0 8px; }
+  .sub { color:#888; font-size:14px; margin-bottom:28px; }
+  .panel { background:#fff; border-radius:16px; padding:26px 24px;
+           box-shadow:0 4px 16px rgba(0,0,0,.06); margin-bottom:20px; }
+  .panel h2 { font-size:18px; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+  .badge { flex:none; width:28px; height:28px; border-radius:50%; background:var(--red);
+           color:#fff; font-size:14px; font-weight:700;
+           display:flex; align-items:center; justify-content:center; }
+  .guide { font-size:14px; color:#555; line-height:2; }
+  .guide b { color:var(--dark); }
+  .guide a { color:var(--red); }
+  label { display:block; font-size:14px; font-weight:600; margin:16px 0 6px; }
+  input[type=text] { width:100%; padding:12px 14px; border:1.5px solid #ddd;
+                     border-radius:10px; font-size:14px; }
+  input[type=text]:focus { outline:none; border-color:var(--yellow); }
+  .kw-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .kw { padding:7px 14px; border-radius:999px; border:1.5px solid #ddd;
+        font-size:13px; cursor:pointer; user-select:none; background:#fff; }
+  .kw.on { background:var(--yellow); border-color:var(--yellow); font-weight:600; }
+  .btn { display:block; width:100%; margin-top:22px; padding:14px;
+         background:var(--red); color:#fff; border:none; border-radius:12px;
+         font-size:16px; font-weight:700; cursor:pointer; }
+  .btn:disabled { background:#ccc; cursor:not-allowed; }
+  .err { color:var(--red); font-size:13px; margin-top:10px; display:none; }
+  .qr-box { text-align:center; padding:8px 0; }
+  .qr-box img { width:230px; height:230px; border-radius:12px;
+                box-shadow:0 4px 14px rgba(0,0,0,.12); }
+  .code { font-size:40px; font-weight:800; letter-spacing:8px; color:var(--red);
+          text-align:center; margin:12px 0 4px; }
+  .hint { text-align:center; font-size:13px; color:#888; }
+  .status { text-align:center; font-size:14px; margin-top:14px; color:#666; }
+  .done { color:#2E7D32; font-weight:700; }
+  .warn { color:#DA291C; font-weight:700; }
+  .qr-refresh {
+    display:block; width:100%; margin:16px 0 4px; padding:13px 16px;
+    font-size:15px; font-weight:700; font-family:inherit; cursor:pointer;
+    color:var(--red); background:#fff; border:2px dashed var(--red);
+    border-radius:14px; transition:background .15s, transform .1s; }
+  .qr-refresh:active { transform:scale(.98); background:#FFF0EE; }
+  .qr-refresh:disabled { opacity:.55; cursor:default; }
+  .qr-refresh.hot { background:var(--red); color:#fff; border-style:solid;
+    animation:pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow:0 0 0 0 rgba(218,41,28,.45); }
+                     50%     { box-shadow:0 0 0 10px rgba(218,41,28,0); } }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="/">← 返回首页</a>
+  <h1>开通你的百变麦小薯</h1>
+  <p class="sub">全程约 3 分钟，开通后管家 7×24 替你蹲优惠</p>
+
+  <!-- 第 1 步：Token 指引 -->
+  <div class="panel">
+    <h2><span class="badge">1</span>领取麦当劳 MCP 通行证（Token）</h2>
+    <div class="guide">
+      1. 打开 <a href="https://open.mcd.cn/mcp" target="_blank"><b>麦当劳 MCP 平台 open.mcd.cn/mcp</b></a>，用<b>本人手机号</b>注册/登录（要收一条短信验证码，这步只能你亲自来）。<br>
+      2. 在「麦当劳 MCP 平台」页面点 <b>创建 Token</b>（免费，即申即得）。<br>
+      3. 复制生成的 Token 字符串，粘贴到下面的框里。<br>
+      <span style="color:#999">🔒 Token 只用于查询你自己账号的优惠信息，本站加密存储，绝不外传。</span>
+    </div>
+    <label for="token">你的 MCP Token</label>
+    <input type="text" id="token" placeholder="粘贴 Token，例如 19bW2dUXOMcw8KvEml11…">
+  </div>
+
+  <!-- 第 2 步：关注配置 -->
+  <div class="panel">
+    <h2><span class="badge">2</span>告诉管家你爱吃什么</h2>
+    <label>点选关注（也可之后在微信里用「关注 xx」随时改）</label>
+    <div class="kw-row" id="kwRow"></div>
+    <div style="margin-top:8px;display:flex;gap:8px">
+      <input id="kwCustom" placeholder="其他：自己输入，回车添加（如 麦旋风、派）"
+             style="flex:1;padding:8px 12px;border:1.5px solid #ddd;border-radius:999px;font-size:13px;outline:none">
+    </div>
+  </div>
+
+  <button class="btn" id="btnRegister">下一步：生成微信绑定码 →</button>
+  <div class="err" id="err"></div>
+
+  <!-- 第 3 步：扫码绑定 -->
+  <div class="panel hidden" id="panelBind">
+    <h2><span class="badge">3</span>微信扫码，管家上岗</h2>
+    <div class="qr-box" id="qrBox"><p class="hint">正在向微信申请二维码……</p></div>
+    <p class="hint" style="margin-top:10px">用<b>手机微信</b>扫码并确认，通讯录里会出现「ClawBot」</p>
+    <div class="code" id="bindCode"></div>
+    <p class="hint">扫码后<b>马上</b>把上面这 8 位绑定码<b>发给 ClawBot</b> 即完成绑定（会话有时效，别放太久哦）</p>
+    <p class="status" id="qrStatus"></p>
+    <!-- 微信二维码是「一次性」的：扫过一次（哪怕你什么都没做又解绑了），
+         这张图就再也扫不动了，微信会直接提示「二维码已过期」。
+         所以必须常驻一个按钮，让用户自己换一张。 -->
+    <button type="button" class="qr-refresh" id="btnNewQr">🔄 二维码过期了？点我换一张</button>
+  </div>
+</div>
+
+<script>
+const PRESET = ["麦香鱼","薯条","巨无霸","板烧鸡腿堡","麦辣鸡翅","麦乐鸡","早餐","咖啡","甜筒","随心配"];
+const picked = new Set(["麦香鱼"]);
+const kwRow = document.getElementById("kwRow");
+const tokenInput = document.getElementById("token");
+
+// ---- 表单状态持久化：刷新不丢（Token + 选中关键词 + 自定义词） ----
+const FORM_KEY = "maimai_onboard_form";
+function saveForm() {
+  localStorage.setItem(FORM_KEY, JSON.stringify({
+    token: tokenInput.value.trim(),
+    keywords: [...picked],
+  }));
+}
+function addChip(k) {
+  const el = document.createElement("span");
+  el.className = "kw" + (picked.has(k) ? " on" : "");
+  el.textContent = k;
+  el.onclick = () => {
+    picked.has(k) ? picked.delete(k) : picked.add(k);
+    el.classList.toggle("on");
+    saveForm();
+  };
+  kwRow.appendChild(el);
+}
+PRESET.forEach(addChip);
+// 恢复上次填写
+try {
+  const saved = JSON.parse(localStorage.getItem(FORM_KEY) || "null");
+  if (saved) {
+    if (saved.token) tokenInput.value = saved.token;
+    picked.clear();
+    (saved.keywords || []).forEach(k => {
+      picked.add(k);
+      if (!PRESET.includes(k)) addChip(k);   // 自定义词补建 chip
+    });
+    kwRow.querySelectorAll(".kw").forEach(el =>
+      el.classList.toggle("on", picked.has(el.textContent)));
+  }
+} catch (e) { /* 忽略损坏的存档 */ }
+tokenInput.addEventListener("input", saveForm);
+
+// 自定义关键词：回车添加成选中的 chip，再点可取消
+const kwCustom = document.getElementById("kwCustom");
+kwCustom.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  const k = kwCustom.value.trim();
+  if (!k || picked.has(k)) { kwCustom.value = ""; return; }
+  picked.add(k);
+  addChip(k);
+  kwCustom.value = "";
+  saveForm();
+});
+
+const btn = document.getElementById("btnRegister");
+const err = document.getElementById("err");
+let pollTimer = null;
+
+// 手机网络（5G / 微信 webview）偶尔会把连接掐断，表现为 TypeError: Load failed。
+// 这时候服务端其实往往已经处理完了，只是响应没回来 —— 所以必须自动重试。
+// /api/register 是幂等的（同一个 Token 永远返回同一个 user_id），重试绝对安全。
+async function fetchRetry(url, opts = {}, tries = 3, onRetry = null) {
+  let lastErr;
+  for (let i = 0; i < tries; i++) {
+    try {
+      return await fetch(url, opts);
+    } catch (e) {
+      lastErr = e;
+      if (i < tries - 1) {
+        if (onRetry) onRetry(i + 1);
+        await new Promise(s => setTimeout(s, 900 * (i + 1)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+btn.onclick = async () => {
+  err.style.display = "none";
+  const token = document.getElementById("token").value.trim();
+  if (token.length < 8) { err.textContent = "请先粘贴有效的 MCP Token"; err.style.display = "block"; return; }
+  btn.disabled = true; btn.textContent = "正在校验 Token 并注册……";
+  try {
+    const r = await fetchRetry("/api/register", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({mcp_token: token, keywords: [...picked]})
+    }, 3, (n) => { btn.textContent = `网络有点抖，正在重试（${n}/2）……`; });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || "注册失败");
+    localStorage.setItem("maimai_uid", String(d.user_id));  // 抽卡屋凭它拉真实卡池
+    localStorage.setItem("maimai_secret", d.user_secret || "");  // 与 uid 配对的口令，防越权
+    document.getElementById("bindCode").textContent = d.binding_code;
+    document.getElementById("panelBind").classList.remove("hidden");
+    btn.textContent = "✅ 注册成功，去扫码吧";
+    document.getElementById("panelBind").scrollIntoView({behavior:"smooth"});
+    loadQr();
+  } catch (e) {
+    // 网络层错误（Load failed / Failed to fetch）单独给一句人话，
+    // 并说明"再点一次不会重复注册"，免得用户不敢点
+    const net = /load failed|failed to fetch|network|abort/i.test(e.message || "");
+    err.textContent = net
+      ? "网络中断了（重试 3 次都没连上）。直接再点一次就行，同一个 Token 不会重复注册。"
+      : e.message;
+    err.style.display = "block";
+    btn.disabled = false; btn.textContent = "下一步：生成微信绑定码 →";
+  }
+};
+
+async function loadQr() {
+  const box = document.getElementById("qrBox");
+  const st = document.getElementById("qrStatus");
+  const btnNew = document.getElementById("btnNewQr");
+  // 关键：换图前先把上一轮轮询停掉，否则点几次就叠出多个定时器，
+  // 状态互相打架，还会一直打接口被限流。
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  st.textContent = "";
+  btnNew.classList.remove("hot");
+  btnNew.disabled = true;
+  btnNew.textContent = "正在申请新二维码…";
+  box.innerHTML = `<p class="hint">正在向微信申请二维码…</p>`;
+  try {
+    const r = await fetchRetry("/api/qr", {cache: "no-store"}, 3);
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || "二维码获取失败");
+    box.innerHTML = `<img src="${d.qr_data_url}" alt="微信绑定二维码">`;
+    pollTimer = setInterval(() => pollQr(d.session_id), 3000);
+  } catch (e) {
+    const net = /load failed|failed to fetch|network|abort/i.test(e.message || "");
+    box.innerHTML = `<p class="hint">😵 ${net ? "网络断了，二维码没拿到" : e.message}</p>`;
+    btnNew.classList.add("hot");
+  } finally {
+    btnNew.disabled = false;
+    btnNew.textContent = "🔄 二维码过期了？点我换一张";
+  }
+}
+
+document.getElementById("btnNewQr").onclick = loadQr;
+
+async function pollQr(sid) {
+  try {
+    const r = await fetch(`/api/qr/${sid}`);
+    const d = await r.json();
+    const st = document.getElementById("qrStatus");
+    const btnNew = document.getElementById("btnNewQr");
+    if (d.status === "done") {
+      clearInterval(pollTimer); pollTimer = null;
+      st.innerHTML = "<span class='done'>✅ 扫码成功！现在把绑定码发给 ClawBot 吧</span>";
+      // 扫过一次这张图就作废了（微信侧一次性），想再绑一个就得换新的
+      btnNew.classList.add("hot");
+    } else if (d.status === "expired") {
+      clearInterval(pollTimer); pollTimer = null;
+      st.innerHTML = "<span class='warn'>⚠️ 这张码已失效（只能扫一次），点下面按钮换一张</span>";
+      btnNew.classList.add("hot");
+    }
+  } catch (e) { /* 网络抖动忽略，下一轮再试 */ }
+}
+</script>
+</body>
+</html>

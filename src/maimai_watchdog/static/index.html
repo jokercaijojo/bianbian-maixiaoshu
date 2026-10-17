@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>百变麦小薯 —— 你的麦当劳优惠蹲点机器人</title>
+<!-- 链路预取：用户还在看首页时就把抽卡屋和首抽卡面拉到本地，
+     点「先去抽一张造型卡」不再等网络 -->
+<link rel="prefetch" href="/gacha">
+<link rel="prefetch" as="image" href="/static/img/cards/web/zoom/03_fries_hand.webp">
+<link rel="prefetch" href="/onboard">
+<script type="speculationrules">
+{"prefetch":[{"source":"list","urls":["/gacha","/onboard"],"eagerness":"eager"}],
+ "prerender":[{"source":"list","urls":["/gacha"],"eagerness":"eager"}]}
+</script>
+<style>
+  :root { --red:#DA291C; --yellow:#FFC72C; --gold:#FFD700; --dark:#27251F;
+          --cream:#FFFAF0; --pink:#FFE4EC; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:"Yuanti SC","YouYuan","PingFang SC","Microsoft YaHei",sans-serif;
+         background:var(--cream); color:var(--dark); overflow-x:hidden; }
+
+  /* ---------- Hero ---------- */
+  .hero { position:relative; background:linear-gradient(160deg,#E83A28 0%,var(--red) 45%,#A8160C 100%);
+          color:#fff; padding:64px 24px 120px; text-align:center; }
+  .hero::after { content:""; position:absolute; left:0; right:0; bottom:-1px; height:60px;
+          background:var(--cream);
+          clip-path:ellipse(75% 100% at 50% 100%); }
+  .float-food { position:absolute; font-size:34px; opacity:.9; filter:drop-shadow(0 4px 6px rgba(0,0,0,.25));
+          animation:floaty 3.6s ease-in-out infinite; user-select:none; }
+  @keyframes floaty { 0%,100%{transform:translateY(0) rotate(-6deg)} 50%{transform:translateY(-14px) rotate(6deg)} }
+  .avatar-wrap { position:relative; display:inline-block; }
+  .avatar-wrap img { width:132px; height:132px; border-radius:50%; object-fit:cover;
+          border:5px solid var(--yellow); background:#fff;
+          box-shadow:0 0 0 6px rgba(255,199,44,.28), 0 10px 28px rgba(0,0,0,.35);
+          animation:bob 3s ease-in-out infinite; }
+  @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+  .sparkle { position:absolute; font-size:22px; animation:twinkle 1.8s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100%{opacity:.25;transform:scale(.8)} 50%{opacity:1;transform:scale(1.2)} }
+  .hero h1 { font-size:46px; margin:18px 0 6px; letter-spacing:6px;
+          text-shadow:0 3px 0 rgba(0,0,0,.18); }
+  .hero .tagline { display:inline-block; background:rgba(0,0,0,.22); border:1.5px dashed rgba(255,233,160,.55);
+          border-radius:999px; padding:6px 20px; font-size:14px; color:#FFE9A0; margin-bottom:22px; }
+  .hero p { font-size:17px; opacity:.95; max-width:540px; margin:0 auto 30px; line-height:1.8; }
+  .cta { display:inline-block; background:linear-gradient(180deg,#FFDF6B,var(--yellow));
+         color:var(--dark); font-size:18px; font-weight:800; padding:15px 42px;
+         border-radius:999px; text-decoration:none; border-bottom:4px solid #D9A400;
+         box-shadow:0 8px 22px rgba(0,0,0,.28); transition:transform .15s;
+         animation:pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.28)} 50%{box-shadow:0 8px 32px rgba(255,199,44,.55)} }
+  .cta:hover { transform:translateY(-3px) scale(1.04); }
+  .hero .sub-link { display:inline-block; margin-top:18px; color:#FFE9A0; font-size:14px;
+          text-decoration:none; border-bottom:1.5px dashed #FFE9A0; padding-bottom:2px; }
+
+  /* ---------- 区块标题（卖萌徽章） ---------- */
+  section { max-width:920px; margin:0 auto; padding:52px 24px 8px; }
+  .sec-title { text-align:center; margin-bottom:34px; }
+  .sec-title .pill { display:inline-block; background:#fff; border:2.5px solid var(--yellow);
+          border-radius:999px; padding:10px 30px; font-size:22px; font-weight:800; letter-spacing:2px;
+          box-shadow:0 4px 0 rgba(255,199,44,.35), 0 8px 18px rgba(0,0,0,.05); }
+  .sec-title .pill .hl { color:var(--red); }
+  .sec-title .deco { font-size:18px; margin:0 6px; }
+
+  /* ---------- 四张特性卡：2×2 ---------- */
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+  @media (max-width:640px) { .cards { grid-template-columns:1fr; } }
+  .card { position:relative; background:#fff; border-radius:22px; padding:26px 24px 24px;
+          box-shadow:0 6px 20px rgba(0,0,0,.06); border:2px solid transparent;
+          transition:transform .18s, box-shadow .18s; }
+  .card:nth-child(odd) { transform:rotate(-.7deg); }
+  .card:nth-child(even) { transform:rotate(.7deg); }
+  .card:hover { transform:rotate(0) translateY(-5px); box-shadow:0 14px 30px rgba(218,41,28,.12);
+          border-color:var(--yellow); }
+  .card .ic { display:inline-flex; align-items:center; justify-content:center;
+          width:58px; height:58px; border-radius:18px; font-size:30px; margin-bottom:12px; }
+  .card:nth-child(1) .ic { background:#FFE9F0; }
+  .card:nth-child(2) .ic { background:#FFF3D6; }
+  .card:nth-child(3) .ic { background:#E9F4FF; }
+  .card:nth-child(4) .ic { background:#F0E9FF; }
+  .card h3 { font-size:19px; margin-bottom:8px; letter-spacing:1px; }
+  .card h3::after { content:""; display:block; width:34px; height:4px; margin-top:6px;
+          border-radius:2px; background:var(--yellow); }
+  .card p { font-size:14px; color:#6b6257; line-height:1.85; }
+
+  /* ---------- 对话演示：手机框 ---------- */
+  .phone { max-width:400px; margin:0 auto; background:#fff; border-radius:32px;
+          padding:14px 14px 18px; box-shadow:0 12px 34px rgba(0,0,0,.10);
+          border:3px solid #F1E8D8; }
+  .phone .notch { width:110px; height:8px; border-radius:4px; background:#EFE6D6;
+          margin:2px auto 14px; }
+  .phone .who { text-align:center; font-size:13px; color:#9a9284; margin-bottom:10px; }
+  .msg { border-radius:16px; padding:10px 14px; margin:9px 6px; font-size:14px;
+         line-height:1.65; max-width:86%; }
+  .msg.user { background:#95EC69; margin-left:auto; border-bottom-right-radius:6px; }
+  .msg.bot { background:#F5F1E8; border-bottom-left-radius:6px;
+             display:flex; gap:8px; align-items:flex-start; }
+  .msg.bot .face { flex:none; width:30px; height:30px; border-radius:50%; object-fit:cover;
+             border:2px solid var(--yellow); background:#fff; }
+
+  /* ---------- 大脑便签：对话演示下方的技术注解 ---------- */
+  .llm-note { max-width:400px; margin:20px auto 0; background:#FFFBEF;
+          border:2px dashed rgba(255,199,44,.75); border-radius:20px;
+          padding:14px 18px; display:flex; gap:11px; align-items:flex-start;
+          box-sizing:border-box; box-shadow:0 6px 16px rgba(0,0,0,.045); }
+  .llm-note .brain { flex:none; font-size:22px; line-height:1.15;
+          animation:brainpop 2.6s ease-in-out infinite; }
+  @keyframes brainpop { 0%,100%{transform:scale(1) rotate(-5deg)} 50%{transform:scale(1.14) rotate(5deg)} }
+  .llm-note p { flex:1 1 auto; min-width:0; font-size:13.5px; line-height:1.85; color:#6b6257; }
+  .llm-note b { color:var(--red); font-weight:800; letter-spacing:.3px;
+          white-space:nowrap; }   /* 模型名整体不拆行，避免 GLM-5.3- / Flash 断成两截 */
+  .llm-note .hl { color:var(--red); font-weight:700; white-space:nowrap; }
+
+  /* ---------- 三步开通 ---------- */
+  .steps { display:grid; gap:18px; counter-reset:step; }
+  .step { position:relative; display:flex; gap:18px; align-items:flex-start; background:#fff;
+          border-radius:20px; padding:22px 24px; box-shadow:0 4px 14px rgba(0,0,0,.05);
+          border:2px dashed #F3E3B8; }
+  .step .n { flex:none; width:44px; height:44px; border-radius:50% 50% 50% 12%;
+             background:linear-gradient(160deg,#FFDF6B,var(--yellow)); color:var(--dark);
+             font-weight:900; font-size:20px; display:flex; align-items:center; justify-content:center;
+             box-shadow:0 3px 0 #D9A400; }
+  .step h3 { font-size:17px; margin-bottom:5px; letter-spacing:.5px; }
+  .step p { font-size:14px; color:#6b6257; line-height:1.75; }
+  .step .em { color:var(--red); font-weight:700; }
+  .center { text-align:center; margin-top:38px; }
+
+  footer { text-align:center; color:#a89e8d; font-size:13px; padding:44px 16px 54px;
+           line-height:1.9; }
+  footer .sign { font-size:15px; color:#8b8172; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <span class="float-food" style="left:8%;top:18%">🍟</span>
+  <span class="float-food" style="right:10%;top:24%;animation-delay:.8s">🍔</span>
+  <span class="float-food" style="left:16%;bottom:32%;animation-delay:1.5s;font-size:26px">🍦</span>
+  <span class="float-food" style="right:18%;bottom:38%;animation-delay:2.2s;font-size:26px">🥤</span>
+
+  <div class="avatar-wrap">
+    <img src="/static/img/cards/web/avatar/01_fish_beret.webp" alt="麦小薯"
+         width="132" height="132" fetchpriority="high"
+         onerror="this.onerror=null;this.src='/static/img/cards/01_fish_beret.png'">
+    <span class="sparkle" style="left:-18px;top:6px">✨</span>
+    <span class="sparkle" style="right:-14px;top:26px;animation-delay:.9s">✨</span>
+    <span class="sparkle" style="left:2px;bottom:0;animation-delay:1.4s">🌟</span>
+  </div>
+  <h1>百变麦小薯</h1>
+  <div class="tagline">住在微信里的麦当劳蹲点搭子 · 性格由你捏</div>
+  <p>你只管说爱吃什么，她帮你 7×24 盯着券池，<br>
+     优惠一出现立刻微信喊你，还能一键帮你领好～</p>
+  <a class="cta" href="/gacha">🎴 先去抽一张造型卡 →</a>
+  <div>
+    <a class="sub-link" href="/onboard">抽到啦？点这里开通她，开始帮你蹲优惠 →</a>
+  </div>
+</div>
+
+<section>
+  <div class="sec-title">
+    <div class="pill"><span class="deco">🍟</span>百变麦小薯，是<span class="hl">怎样的她</span><span class="deco">🍟</span></div>
+  </div>
+  <div class="cards">
+    <div class="card"><div class="ic">🎭</div><h3>性格，由你决定</h3>
+      <p>说一句「变身 明日香」，她就变成你爱的那个动漫角色——傲娇的、元气的、毒舌的，语气口癖全对上。看腻了？「变回来」，她还是那个麦门小吃货。</p></div>
+    <div class="card"><div class="ic">👀</div><h3>优惠，替你蹲着</h3>
+      <p>你只管说爱吃什么，她 7×24 帮你盯着官方券池。麦香鱼一有优惠，微信第一时间喊你，还能一键帮你领进卡包——手慢无的时代结束了。</p></div>
+    <div class="card"><div class="ic">💬</div><h3>无聊，陪你解闷</h3>
+      <p>吐槽老板、汇报摸鱼、分享今天的离谱事——她都接得住，还会讲冷笑话。每天聊满两轮算打卡，集齐造型卡，解锁她的新皮肤。</p></div>
+    <div class="card"><div class="ic">🎓</div><h3>喜好，记在心上</h3>
+      <p>你吃不吃辣、雪糕爱香草还是抹茶、咖啡要冰美式还是热拿铁——聊过的她都记得。下次推荐，句句都是为你量身挑的，而不是群发广告。</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-title">
+    <div class="pill"><span class="deco">💬</span>真实对话<span class="hl">长这样</span><span class="deco">💬</span></div>
+  </div>
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="who">百变麦小薯 · 微信</div>
+    <div class="msg user">关注 麦香鱼</div>
+    <div class="msg bot"><img class="face" src="/static/img/cards/web/face/03_fries_hand.webp" alt="" width="30" height="30" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/img/cards/thumbs/03_fries_hand.png'">✅ 已关注「麦香鱼」，有它的优惠我立刻喊你～</div>
+    <div class="msg user">麦香鱼多少钱？我在中山轻轨站附近</div>
+    <div class="msg bot"><img class="face" src="/static/img/cards/web/face/03_fries_hand.webp" alt="" width="30" height="30" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/img/cards/thumbs/03_fries_hand.png'">查到啦！🐟 麦香鱼在附近餐厅（约3.2km）¥22.00，目前没有额外优惠，继续帮你盯着～</div>
+    <div class="msg bot"><img class="face" src="/static/img/cards/web/face/03_fries_hand.webp" alt="" width="30" height="30" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/img/cards/thumbs/03_fries_hand.png'">🎉 蹲到了！「中薯条买一送一」可领取，与你的关注「薯条」相关，要我一键领券吗？</div>
+  </div>
+  <div class="llm-note">
+    <span class="brain">🎓</span>
+    <p><b>智谱 GLM-5.3-Flash</b> 就是她的小脑袋。你念叨一长串也好、随手甩一句指令也好，她都稳稳 get 到你的意思，<span class="hl">绝不装傻糊弄你</span>🐰</p>
+  </div>
+</section>
+
+<section>
+  <div class="sec-title">
+    <div class="pill"><span class="deco">🚀</span>三步<span class="hl">开通她</span><span class="deco">🚀</span></div>
+  </div>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><div>
+      <h3>领一张麦当劳 MCP 通行证</h3>
+      <p>到麦当劳开放平台免费领取个人 Token（本人手机号收个验证码，全程约 <span class="em">2 分钟</span>，开通页有保姆级图文指引）。</p></div></div>
+    <div class="step"><div class="n">2</div><div>
+      <h3>告诉她你爱吃什么</h3>
+      <p>粘贴 Token，勾选关注的产品。Token 加密保存在你的专属配置里，<span class="em">绝不外传</span>。</p></div></div>
+    <div class="step"><div class="n">3</div><div>
+      <h3>微信扫码，小薯上岗</h3>
+      <p>扫码加 ClawBot，<span class="em">马上</span>把 8 位绑定码发给它——从这一刻起，她就开始替你蹲点啦。</p></div></div>
+  </div>
+  <div class="center">
+    <a class="cta" href="/onboard">开始开通 →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="sign">用 🍟 和 ❤️ 做的 · 百变麦小薯</div>
+  基于麦当劳官方 MCP 能力构建 · 1024 程序员节参赛作品<br>
+  本项目与麦当劳中国的合作仅限官方开放平台能力调用
+</footer>
+
+</body>
+</html>

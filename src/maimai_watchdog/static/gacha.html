@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>百变麦小薯的抽卡屋</title>
+<!-- 首抽必出「薯条·手捧」，页面一加载就把这张的两套图拉下来，
+     点卡时从本地缓存出图，不用再等网络往返 -->
+<link rel="preload" as="image" href="/static/img/cards/web/zoom/03_fries_hand.webp">
+<link rel="preload" as="image" href="/static/img/cards/web/ring/03_fries_hand.webp">
+<link rel="prefetch" href="/onboard">
+<!-- 返回首页提速：提前预取+预渲染首页 -->
+<link rel="prefetch" href="/">
+<script type="speculationrules">
+{"prefetch":[{"source":"list","urls":["/"],"eagerness":"eager"}],
+ "prerender":[{"source":"list","urls":["/"],"eagerness":"eager"}]}
+</script>
+<style>
+  :root { --red:#DA291C; --yellow:#FFC72C; --gold:#FFD700; --dark:#27251F; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+         background:radial-gradient(ellipse at 50% 30%, #3a1010 0%, #1a0505 70%);
+         color:#fff; min-height:100vh; overflow-x:hidden; }
+
+  header { text-align:center; padding:36px 20px 0; }
+  h1 { font-size:30px; letter-spacing:3px;
+       background:linear-gradient(180deg,#FFE9A0,#FFC72C 60%,#E8A020);
+       -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:#d8a0a0; font-size:14px; margin-top:8px; }
+
+  .stage { height:480px; perspective:1600px; perspective-origin:50% 42%;
+           display:flex; align-items:center; justify-content:center;
+           cursor:grab; user-select:none; touch-action:pan-y; }
+  .stage:active { cursor:grabbing; }
+  .ring { position:relative; width:176px; height:262px; transform-style:preserve-3d; }
+  .card { position:absolute; inset:0; border-radius:18px;
+          transform-style:preserve-3d; will-change:transform; }
+  .card .face { position:absolute; inset:0; border-radius:18px; overflow:hidden;
+                backface-visibility:hidden; transition:transform .6s; }
+  .card .face img { width:100%; height:100%; object-fit:cover; display:block;
+                    transform:translateZ(0); }
+
+  /* 锁定卡：深红丝绒底 + 金线压边 + 金字浮雕 */
+  .card.locked .face {
+    background:
+      radial-gradient(circle at 50% 36%, rgba(255,215,0,.14), transparent 55%),
+      repeating-linear-gradient(45deg,#230b0b 0 10px,#2c0f0f 10px 20px);
+    border:1px solid rgba(255,199,44,.55);
+    box-shadow: inset 0 0 0 4px rgba(50,16,10,.85),
+                inset 0 0 0 5px rgba(255,199,44,.30),
+                inset 0 2px 18px rgba(0,0,0,.55),
+                0 10px 26px rgba(0,0,0,.55);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .card.locked .q { font-size:62px; font-weight:900;
+                    background:linear-gradient(180deg,#FFF3C4,#FFC72C 55%,#B8860B);
+                    -webkit-background-clip:text; background-clip:text; color:transparent;
+                    filter:drop-shadow(0 2px 8px rgba(255,199,44,.35)); }
+  .card.locked .cond { font-size:11px; color:#d8b8a8; margin-top:12px; padding:0 12px;
+                       text-align:center; line-height:1.5; }
+  .card.locked.drawable { animation:beckon 2.2s ease-in-out infinite; }
+  @keyframes beckon {
+    0%,100% { filter:brightness(1); }
+    50%     { filter:brightness(1.3); } }
+
+  /* 解锁卡：金属描金框 + 全息流光 */
+  .card.unlocked .face {
+    padding:6px;
+    background:linear-gradient(135deg,#FFF2B0 0%,#D4A017 22%,#FFF7D0 48%,
+                               #B8860B 72%,#FFE9A0 100%);
+    box-shadow:0 0 22px rgba(255,215,0,.40), 0 0 56px rgba(255,199,44,.16),
+               0 12px 28px rgba(0,0,0,.5);
+    animation:glow 2.6s ease-in-out infinite alternate; }
+  .card.unlocked .face img { border-radius:12px; }
+  .card.unlocked .face::after {
+    content:""; position:absolute; inset:0; border-radius:18px; pointer-events:none;
+    background:linear-gradient(115deg, transparent 32%, rgba(255,255,255,.5) 45%,
+                               rgba(255,255,255,.10) 53%, transparent 66%);
+    background-size:260% 260%; mix-blend-mode:screen;
+    animation:sheen 3.4s ease-in-out infinite; }
+  @keyframes sheen {
+    0%,100% { background-position:125% 0; }
+    50%     { background-position:-25% 0; } }
+  @keyframes glow {
+    from { box-shadow:0 0 14px rgba(255,215,0,.30), 0 0 40px rgba(255,199,44,.10),
+                      0 12px 28px rgba(0,0,0,.5); }
+    to   { box-shadow:0 0 26px rgba(255,215,0,.55), 0 0 72px rgba(255,199,44,.24),
+                      0 12px 28px rgba(0,0,0,.5); } }
+  .rarity { position:absolute; top:10px; left:0; right:0; text-align:center;
+            font-size:13px; font-weight:800; letter-spacing:2px;
+            color:#FFE9A0; text-shadow:0 1px 2px #000, 0 0 10px rgba(0,0,0,.8); z-index:2; }
+
+  .hint { text-align:center; color:#ffd9a0; font-size:15px;
+          animation:beckon 1.6s ease-in-out infinite; }
+
+  /* 抽卡揭示遮罩 */
+  .zoom { position:fixed; inset:0; background:rgba(10,2,2,.9); z-index:50;
+          display:none; align-items:center; justify-content:center; flex-direction:column;
+          padding:20px; }
+  .zoom.show { display:flex; animation:fadein .25s; }
+  @keyframes fadein { from{opacity:0} to{opacity:1} }
+  .zoom img { width:min(74vw,360px); border-radius:22px; padding:7px;
+              background:linear-gradient(135deg,#FFF2B0,#D4A017 25%,#FFF7D0 50%,#B8860B 75%,#FFE9A0);
+              box-shadow:0 0 60px rgba(255,215,0,.5);
+              animation:pop .55s cubic-bezier(.2,1.4,.4,1); }
+  @keyframes pop { from{transform:scale(.5) rotateY(80deg);opacity:0}
+                   to{transform:scale(1) rotateY(0);opacity:1} }
+  .zoom .tag { margin-top:14px; font-size:13px; font-weight:800; letter-spacing:2px;
+               color:var(--gold); }
+  .zoom .line { margin-top:10px; max-width:360px; text-align:center;
+                font-size:15px; line-height:1.8; color:#ffe9a0; }
+  .zoom .cta { margin-top:18px; background:var(--yellow); color:var(--dark);
+               font-weight:700; padding:13px 34px; border-radius:999px;
+               text-decoration:none; font-size:16px; }
+  .zoom .later { margin-top:12px; color:#a77; font-size:13px; }
+
+  /* 规则区 */
+  .rules { max-width:560px; margin:10px auto 60px; padding:0 22px; }
+  .rules h2 { text-align:center; font-size:19px; color:#ffe9a0; margin-bottom:16px; }
+  .rule { background:rgba(255,255,255,.05); border:1px solid rgba(255,199,44,.18);
+          border-radius:14px; padding:14px 18px; margin-bottom:10px;
+          font-size:14px; line-height:1.7; color:#f0d8d8; }
+  .rule b { color:#ffe9a0; }
+  .confetti { position:fixed; top:-10px; width:10px; height:16px; z-index:60;
+              animation:fall linear forwards; pointer-events:none; }
+  @keyframes fall { to { transform:translateY(110vh) rotate(720deg); opacity:.7; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>百变麦小薯的抽卡屋</h1>
+  <p class="sub">点任意一张卡，抽出你的第一张麦小薯造型卡</p>
+</header>
+
+<div class="stage" id="stage">
+  <div class="ring" id="ring"></div>
+</div>
+<p class="hint" id="hint">👆 点一张试试手气（反正第一张有新手保护😏）</p>
+
+<div class="rules">
+  <h2>🎴 怎么解锁更多造型？</h2>
+  <div class="rule">💬 <b>每天来跟她唠嗑</b>：吐槽老板、汇报摸鱼时长、分享今天的离谱事——聊满两轮就算打卡一天，累计打卡 1 / 2 / 4 / 6 / 8 天各解锁一张（断签不清零）</div>
+  <div class="rule">🍟 <b>顺便帮你省钱</b>：她其实是个优惠蹲点员，你聊你的天，她蹲她的券，蹲到了图文播报喊你</div>
+  <div class="rule">🎁 <b>节日限定</b>：冬至、圣诞……限定造型只在节日期间掉落，错过等一年</div>
+  <div class="rule" style="text-align:center;border-style:dashed">
+    <a href="/onboard" style="color:var(--yellow);font-weight:700">申请麦当劳 MCP，马上玩起来</a></div>
+</div>
+
+<div class="zoom" id="zoom">
+  <img id="zoomImg" alt="">
+  <div class="tag" id="zoomTag"></div>
+  <div class="line" id="zoomLine"></div>
+  <a class="cta" href="/onboard">让麦小薯帮我蹲优惠 →</a>
+  <div class="later" onclick="document.getElementById('zoom').classList.remove('show')">先再看看卡池</div>
+</div>
+
+<script>
+const FIRST_CARD = {
+  img:"/static/img/cards/03_fries_hand.png", name:"薯条·手捧", rarity:"R",
+  line:"你好呀！我是麦小薯🍟 送你我的第一张造型卡～对了，最近麦麦省有「中薯条买一送一」，也不知道现在还有没有了……你开通我，我天天帮你盯着，一有券就喊你！"};
+const POOL_CONDITIONS = ["累计打卡 1 天解锁","累计打卡 2 天解锁","累计打卡 4 天解锁",
+  "累计打卡 6 天解锁","累计打卡 8 天解锁","冬至限定","圣诞限定",
+  "SSR · 神秘节日限定","SSR · 神秘节日限定","SSR · 神秘节日限定","???"];
+
+const KEY = "maimai_first_drawn";
+const UID = new URLSearchParams(location.search).get("uid")
+         || localStorage.getItem("maimai_uid");
+const USECRET = localStorage.getItem("maimai_secret") || "";
+const ring = document.getElementById("ring");
+const N = 12, RADIUS = 430;
+
+function addCard(el, angle) {
+  el.style.transform = `rotateY(${angle}deg) translateZ(${RADIUS}px)`;
+  ring.appendChild(el);
+}
+function cardIdOf(c) {
+  return c.img.split("/").pop().replace(/\.png$/i, "");
+}
+function portraitOf(c) {
+  // 竖版卡面（1024×1536）与卡面比例一致；没有竖版时回退方形图
+  return c.img.replace("/cards/", "/cards/portrait/");
+}
+function webpOf(c, kind) {
+  // kind: "ring"（卡柱 176×262 用 540px）/ "zoom"（放大揭示用 900px）
+  // 预生成的 WebP 变体，比原图小 18–35 倍，画质肉眼无差
+  return `/static/img/cards/web/${kind}/${cardIdOf(c)}.webp`;
+}
+function unlockedEl(c) {
+  const el = document.createElement("div");
+  el.className = "card unlocked";
+  el.innerHTML = `<div class="face">
+    <span class="rarity">★ ${c.rarity}</span>
+    <img src="${webpOf(c, "ring")}" alt="${c.name}"
+         width="176" height="262" decoding="async"
+         onerror="this.onerror=null;this.src='${portraitOf(c)}'"></div>`;
+  el.addEventListener("click", () => revealCard(c));
+  return el;
+}
+function lockedEl(cond, drawable, onclick) {
+  const el = document.createElement("div");
+  el.className = "card locked" + (drawable ? " drawable" : "");
+  el.innerHTML = `<div class="face"><div class="q">?</div>
+    <div class="cond">${cond}</div></div>`;
+  if (onclick) el.addEventListener("click", onclick);
+  return el;
+}
+function revealCard(c) {
+  const zi = document.getElementById("zoomImg");
+  zi.onerror = () => { zi.onerror = null; zi.src = portraitOf(c); };
+  zi.src = webpOf(c, "zoom");
+  document.getElementById("zoomTag").textContent = `「${c.name}」 ★${c.rarity}`;
+  document.getElementById("zoomLine").textContent = c.line;
+  document.getElementById("zoom").classList.add("show");
+}
+
+// ---- 骨架屏：接口回来之前先把卡柱立起来 ----
+// 回源一次要 0.5–1 秒（链路原因，不是本地算得慢），
+// 这段时间如果舞台是空的，用户就以为"卡住了"。先把 12 张卡背铺上。
+function renderSkeleton() {
+  ring.innerHTML = "";
+  for (let i = 0; i < N; i++) {
+    addCard(lockedEl("·", false), (360 / N) * i);
+  }
+  document.getElementById("hint").textContent = "正在把卡柱转起来…";
+}
+
+// ---- 模式一：已开通用户，拉真实卡池 ----
+async function initMember(uid) {
+  const r = await fetch(`/api/cards?user_id=${uid}&s=${encodeURIComponent(USECRET)}`);
+  if (!r.ok) throw new Error("bad user");
+  const d = await r.json();
+  if (!d.cards.length) throw new Error("bad user");  // 账号已被清空
+  const cards = d.cards;
+  ring.innerHTML = "";
+  document.querySelector(".sub").textContent =
+    `累计打卡 ${d.days} 天 · 今天已聊 ${Math.min(d.rounds_today, d.checkin_rounds_needed)}/${d.checkin_rounds_needed} 轮`;
+  document.getElementById("hint").textContent =
+    d.rounds_today >= d.checkin_rounds_needed
+      ? "✅ 今天已打卡，明天继续！"
+      : "💬 去微信跟麦小薯再聊两轮，今天就算打卡";
+  // 新手卡必须亲手抽：第一次进抽卡屋，所有卡都是"?"卡背，
+  // 点【任意一张】都触发首抽（新手保护必出薯条卡），彩带+翻牌后上柱
+  const first = cards.find(c => c.id === d.first_card && c.unlocked);
+  const seenKey = "maimai_member_seen_v2_" + uid;
+  const virgin = first && !localStorage.getItem(seenKey);
+  let drawnFirst = false;
+  const drawFirst = () => {
+    if (drawnFirst) return;   // 卡片和舞台热区都会触发，防重复
+    drawnFirst = true;
+    localStorage.setItem(seenKey, "1");
+    confetti();
+    revealCard(first);
+    setTimeout(() => location.reload(), 5200);
+  };
+  cards.forEach((c, i) => {
+    const angle = (360 / N) * i;
+    if (virgin) {
+      addCard(lockedEl(c.id === first.id ? "新手保护 · 点我抽第一张"
+                                           : (c.condition || "???"),
+                       true, drawFirst), angle);
+    } else if (c.unlocked) {
+      addCard(unlockedEl(c), angle);
+    } else {
+      addCard(lockedEl(c.condition, false), angle);
+    }
+  });
+  for (let i = cards.length; i < N; i++) {
+    addCard(lockedEl(POOL_CONDITIONS[i - 1] || "???", false), (360 / N) * i);
+  }
+  if (virgin) {
+    document.getElementById("hint").textContent =
+      "👆 随便点一张，抽出你的第一张造型卡（有新手保护😏）";
+    // 整个舞台都是热区：点卡柱空隙也算抽
+    stage.addEventListener("click", drawFirst, { once: true });
+  }
+}
+
+// ---- 模式二：游客，首抽演示（新手保护必出薯条妹）----
+function initGuest() {
+  ring.innerHTML = "";
+  let drawn = localStorage.getItem(KEY) === "1";
+  for (let i = 0; i < N; i++) {
+    const angle = (360 / N) * i;
+    if (drawn && i === 0) {
+      addCard(unlockedEl(FIRST_CARD), angle);
+    } else {
+      addCard(lockedEl(POOL_CONDITIONS[i - 1] || "???", !drawn,
+                       drawn ? null : firstDraw), angle);
+    }
+  }
+  if (drawn) document.getElementById("hint").textContent =
+    "✨ 开通后明天来聊天打卡，下一张就开始翻面 ✨";
+  function firstDraw() {
+    drawn = true;
+    localStorage.setItem(KEY, "1");
+    confetti();
+    revealCard(FIRST_CARD);
+    setTimeout(() => location.reload(), 5200);
+  }
+}
+
+if (UID && USECRET) {
+  renderSkeleton();          // 先把卡背铺上，别留空舞台
+  initMember(UID).catch(() => {
+    // 账号失效（被清空/不存在）：连首抽标记一起清，回到纯白新客状态
+    localStorage.removeItem("maimai_uid");
+    localStorage.removeItem(KEY);
+    initGuest();
+  });
+} else {
+  initGuest();
+}
+
+function confetti() {
+  const colors = ["#FFC72C","#DA291C","#FFD700","#fff","#FF9A3D"];
+  for (let i = 0; i < 60; i++) {
+    const c = document.createElement("div");
+    c.className = "confetti";
+    c.style.left = Math.random() * 100 + "vw";
+    c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (1.6 + Math.random() * 1.6) + "s";
+    c.style.animationDelay = (Math.random() * 0.5) + "s";
+    c.style.borderRadius = Math.random() > .5 ? "50%" : "2px";
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4200);
+  }
+}
+
+// ---- 自动旋转 + 拖拽 ----
+let rot = 0, vel = 0.12, dragging = false, lastX = 0;
+const stage = document.getElementById("stage");
+stage.addEventListener("pointerdown", e => { dragging = true; lastX = e.clientX; });
+window.addEventListener("pointermove", e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX; lastX = e.clientX;
+  rot += dx * 0.25; vel = dx * 0.06;
+});
+window.addEventListener("pointerup", () => dragging = false);
+(function spin() {
+  if (!dragging) { rot += vel; vel += (0.12 - vel) * 0.02; }
+  ring.style.transform = `rotateY(${rot}deg)`;
+  requestAnimationFrame(spin);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "name": "maimai-watchdog",
+  "version": "2.0.0",
+  "private": true,
+  "description": "百变麦小薯 —— 会变身的麦当劳优惠蹲点机器人（1024 程序员节参赛作品）",
+  "scripts": {
+    "dev": ".venv\\Scripts\\python.exe -m uvicorn maimai_watchdog.webapp:app --app-dir src --reload"
+  }
+}

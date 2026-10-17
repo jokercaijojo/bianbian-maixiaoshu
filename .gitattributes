@@ -1,0 +1,18 @@
+# 统一换行符：仓库内一律 LF，避免 Windows 检出/提交产生无意义 diff
+* text=auto eol=lf
+
+# 明确二进制，避免被当文本处理
+*.png binary
+*.webp binary
+*.jpg binary
+*.db  binary
+*.zip binary
+
+# 常见脚本单独声明
+*.py    text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.html  text eol=lf
+*.css   text eol=lf
+*.js    text eol=lf
+*.bat   text eol=crlf

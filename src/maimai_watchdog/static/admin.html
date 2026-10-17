@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>麦麦管家 · 管理台</title>
+<style>
+  body { font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+         background:#f6f4ef; color:#27251F; margin:0; padding:32px 16px; }
+  .wrap { max-width:760px; margin:0 auto; }
+  h1 { font-size:22px; } h2 { font-size:16px; margin:28px 0 10px; color:#8a6d1f; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+           gap:12px; margin-top:16px; }
+  .card { background:#fff; border-radius:14px; padding:16px 18px;
+          box-shadow:0 2px 10px rgba(0,0,0,.06); }
+  .card .num { font-size:28px; font-weight:800; color:#DA291C; }
+  .card .label { font-size:13px; color:#888; margin-top:4px; }
+  table { width:100%; border-collapse:collapse; background:#fff;
+          border-radius:14px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,.06); }
+  th, td { padding:10px 12px; font-size:13px; text-align:left;
+           border-bottom:1px solid #f0ece2; }
+  th { background:#FFF8E1; color:#8a6d1f; }
+  .muted { color:#999; font-size:12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🍟 麦麦管家 · 管理台</h1>
+  <p class="muted" id="ts"></p>
+
+  <h2>📊 漏斗总览</h2>
+  <div class="cards" id="funnel"></div>
+
+  <h2>📅 近 14 天</h2>
+  <div class="cards" id="daily"></div>
+
+  <h2>👤 用户明细</h2>
+  <table id="users">
+    <tr><th>ID</th><th>名称</th><th>已绑微信</th><th>今日聊天</th><th>累计打卡</th><th>解锁卡数</th><th>记忆条数</th><th>配额/日</th></tr>
+  </table>
+</div>
+<script>
+const key = new URLSearchParams(location.search).get("key") || "";
+fetch("/api/admin/stats", {headers: key ? {"X-Admin-Token": key} : {}}).then(async r => {
+  if (!r.ok) { document.body.innerHTML = "<p style='text-align:center;margin-top:100px'>⛔ 无权访问</p>"; return; }
+  const d = await r.json();
+  document.getElementById("ts").textContent = "数据时间：" + d.now;
+  const funnel = [
+    ["二维码生成", d.totals.qr_created], ["扫码成功", d.totals.qr_scanned],
+    ["注册", d.totals.register], ["绑定微信", d.totals.bind],
+    ["注册用户", d.users.length], ["今日聊天轮次", d.today.chat_rounds],
+  ];
+  document.getElementById("funnel").innerHTML = funnel.map(
+    ([l, n]) => `<div class="card"><div class="num">${n}</div><div class="label">${l}</div></div>`).join("");
+  document.getElementById("daily").innerHTML = d.days.map(x =>
+    `<div class="card"><div class="num">${x.chat_rounds}</div>
+     <div class="label">${x.day}<br>扫码 ${x.qr_scanned} · 注册 ${x.register} · 绑定 ${x.bind}</div></div>`).join("");
+  const tb = document.getElementById("users");
+  d.users.forEach(u => {
+    const tr = tb.insertRow();
+    [u.id, u.name || "-", u.bound ? "✅" : "❌", u.today_rounds + " 轮",
+     u.checkin_days + " 天", u.unlocks, u.facts, u.quota].forEach(v => {
+      tr.insertCell().textContent = v;
+    });
+  });
+});
+</script>
+</body>
+</html>
