@@ -1,8 +1,20 @@
-# 百变麦小薯 · 会变身的麦当劳优惠蹲点机器人（Maimai Watchdog）
+<p align="center">
+  <img src="docs/images/banner.png" alt="百变麦小薯 · 贝雷帽 / 背包 / 薯条 / 挎包 四种造型" width="100%">
+</p>
+
+# 百变麦小薯 · 会变身的麦当劳优惠蹲点机器人
+
+![Python](docs/images/badges/python.svg)
+![MCP](docs/images/badges/mcp.svg)
+![License](docs/images/badges/license.svg)
+![Deploy](docs/images/badges/cloudflare.svg)
+![WorkBuddy](docs/images/badges/workbuddy.svg)
 
 > 一只住在你微信里的「优惠蹲点员」：你只管说爱吃什么，它 7×24 替你盯着麦当劳官方优惠，
 > 蹲到了第一时间**图文播报**推到你微信，还能一句话帮你把券领进卡包。
 > 她还会「变身」——说一句「变身 月野兔」，她就变成你爱的那个动漫角色陪你聊。
+
+**🌐 在线体验**：<https://aiunclehouse.com> ｜ 抽卡屋 / MCP Token 开通向导 / 一键绑定微信
 
 麦当劳程序员节创意开发大赛参赛作品 · 基于[麦当劳官方 MCP](https://open.mcd.cn/mcp) 构建 · 全程使用腾讯 WorkBuddy 开发
 
@@ -19,6 +31,46 @@
 ![微信智能问答](docs/images/wechat-chat.png)
 
 > 截图中涉及个人位置与门店详址的部分已裁剪处理。
+
+## 抽卡屋：把「百变」做成看得见的东西
+
+![抽卡屋](docs/images/gacha.png)
+
+在微信里跟麦小薯聊满两轮就算一次打卡，累计打卡 1 / 2 / 4 / 6 / 8 天各解锁一张新造型卡。
+第一次进抽卡屋有新手保护，随手点一张必出薯条妹——先给点甜头，再慢慢解锁。
+
+四张卡对应四种工作状态，她会按当前在干什么自动换头像：贝雷帽=闲聊 / 背包=查询 / 薯条=推荐 / 挎包=异常兜底。
+
+## 变身：一句话换个人格
+
+发「你当一下明日香」，她会真的去查资料、列出同名角色让你确认，确认后才变身——
+不是硬编码的角色表，而是模型自己检索、自己判断该选哪一个。以下是本地运行的真实输出：
+
+```text
+>>> 用户：你当一下明日香
+<<< 麦小薯：🔍 我去翻翻资料，找找「明日香」是谁……
+<<< 麦小薯：「明日香」这名字好多人用诶，你说的是哪一位？回序号告诉我～
+          1. 明日香   2. 加濑明日香   3. 惣流·明日香·兰格雷
+          4. 天然萌少女明日香   5. 明日香(崩坏系列)   6. 西明日香 …
+
+>>> 用户：3
+<<< 麦小薯：锁定候选——📇 惣流·明日香·兰格雷
+          （《新世纪福音战士》及衍生作品中的登场角色……）
+          确认是 TA 就回「对」，我马上变身～
+
+>>> 用户：对
+<<< 麦小薯：收到！开始研究 惣流·明日香·兰格雷 的说话方式……🎭
+<<< 麦小薯：✨ 变身完成！从现在起我就是：惣流·明日香·兰格雷
+          【性格】① 高傲强势，争强好胜 ② 内心脆弱，掩饰不安 ③ 天才神童，暴躁易怒
+          【口头禅】「你白痴啊？（あんたバカァ？）」
+          【说话风格】语气高亢张扬，爱嘲讽反问，受挫时易炸毛
+          想让我变回麦小薯，随时发「变回来」～
+```
+
+「变身 / 换头像造型 / 记住称呼」这三件事都被注册成了模型可调用的**本地工具**
+（`cosplay-become` / `switch-avatar` / `remember-nickname`），
+所以它自己判断「这句话该调哪个」，而不是靠正则一条条猜。
+一句话里同时说两件事也能全办——先按连接词机械切句，脚本认识的直接秒回，没吃掉的交给模型。
 
 ## 它解决什么问题？
 
@@ -129,16 +181,19 @@ mcd-coupon-watchdog/
 ├── src/maimai_watchdog/
 │   ├── mcp_client.py    # 麦当劳 MCP 客户端（JSON-RPC + SSE）
 │   ├── monitor.py       # 蹲点核心：解析券/活动+配图、关键词命中
-│   ├── agent.py         # GLM Function Calling 代理（9 个 MCP 工具）
-│   ├── chat.py          # 微信指令路由
+│   ├── agent.py         # GLM Function Calling 代理（9 个 MCP 工具 + 3 个本地工具）
+│   ├── chat.py          # 微信指令路由（复合句切分 + 脚本快通道 + 模型兜底）
+│   ├── cosplay.py       # 角色资料检索与变身
 │   ├── channel_claw.py  # 微信 iLink 通道（文字+图片推送）
 │   ├── webapp.py        # FastAPI 网站后端
-│   ├── static/          # 落地页 + 开通向导
+│   ├── static/          # 落地页 + 开通向导 + 抽卡屋
 │   └── db.py            # SQLite：用户(加密Token)/规则/去重/配额/绑定码
 ├── scripts/
 │   ├── daemon.py        # 常驻服务
-│   └── bind_wechat.py   # 微信扫码绑定
+│   ├── bind_wechat.py   # 微信扫码绑定
+│   └── make_web_variants.py  # 由母版派生四套 WebP 响应式图片
 ├── assets/avatar/           # 角色形象母版原图（4 竖版 + 4 微信方图）
+├── docs/images/             # README 配图（横幅 / 抽卡屋 / 微信实测 / 徽章）
 ├── CONTEST_DECLARATION.md   # 参赛声明（官方原文，未改动）
 ├── MCP_INTEGRATION.md       # MCP 接入说明
 └── workbuddy.md             # WorkBuddy 开发对话记录（系统开发 + 形象制作）
