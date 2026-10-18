@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import urllib.parse
 import urllib.request
 
@@ -105,11 +106,33 @@ def _glm_text(prompt: str) -> str:
         return ""
 
 
+# 一整行就是一句引号台词（如 ①“你白痴啊？” / 「我可是EVA驾驶员！」）
+_CARD_QUOTE_LINE = re.compile(r"^[①②③④⑤⑥⑦⑧⑨⑩\d.、)\-*\s]*[“\"「『]")
+
+
+def scrub_card(card: str) -> str:
+    """兜底过滤人设卡里的"原台词"。
+
+    提示词已明令禁止复刻台词，但模型偶尔仍会带出来；这里再做一道：
+    删掉含"口头禅"的整行、以及整行以引号开头的例句行。
+    只留语气/自称/称呼/性格这些风格描述，不影响扮演效果。
+    """
+    if not card:
+        return card
+    kept: list[str] = []
+    for line in card.splitlines():
+        s = line.strip()
+        if s and ("口头禅" in s or _CARD_QUOTE_LINE.match(s)):
+            continue
+        kept.append(line)
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(kept)).strip()
+
+
 def distill_persona(title: str, extract: str) -> str:
     """用 GLM 把百科正文蒸馏成风格卡，失败返回空串。"""
     if not extract:
         return ""
-    return _glm_text(_DISTILL_PROMPT % (title, extract))
+    return scrub_card(_glm_text(_DISTILL_PROMPT % (title, extract)))
 
 
 def distill_style(name: str) -> str:
@@ -120,7 +143,7 @@ def distill_style(name: str) -> str:
     name = (name or "").strip()
     if not name:
         return ""
-    return _glm_text(_STYLE_PROMPT % (name, name))
+    return scrub_card(_glm_text(_STYLE_PROMPT % (name, name)))
 
 
 # 常见"说话风格"词：用户说这些时不必查百科（百科是全文搜索，

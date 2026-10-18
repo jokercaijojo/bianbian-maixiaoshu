@@ -397,6 +397,21 @@ def _free_chat(store: Store, user: dict, text: str) -> Iterator[str]:
 async def handle_message(store: Store, user: dict, text: str) -> AsyncIterator[str]:
     """处理一条微信消息，yield 回复文本。
 
+    外层统一兜一遍 HTML 清洗：MCP 返回的活动数据带 <img src="...">，模型或脚本
+    都可能把标签漏进正文，微信里就会显示成一串代码。图片和头像走 IMGURL / AVA
+    哨兵由通道另行发送，所以把正文里的标签抹掉不会丢图。
+    """
+    from .agent import strip_html
+    async for chunk in _handle_message(store, user, text):
+        if chunk.startswith(("IMGURL|", "AVA|")):   # 哨兵原样透传
+            yield chunk
+        else:
+            yield strip_html(chunk)
+
+
+async def _handle_message(store: Store, user: dict, text: str) -> AsyncIterator[str]:
+    """真正的消息处理（含哨兵与图片指令，勿直接对外）。
+
     流程：切句 → 每句先过脚本快通道（命中即秒回）→ 没被脚本吃掉的句子交给 GLM。
     """
     text = (text or "").strip()

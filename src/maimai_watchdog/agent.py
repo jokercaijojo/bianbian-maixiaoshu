@@ -36,7 +36,8 @@ MCP_RULES = """你可以调用麦当劳官方 MCP 工具获取真实数据。规
     · switch-avatar —— 换聊天头像造型。用户嫌头像烦/腻了、想换造型、想换头像时调；不带参数=列出已解锁的，带序号或名字=切换，传"关"=以后不发图。
     · remember-nickname —— 记住用户希望被怎么称呼。用户说"叫我X""以后喊我X""我叫X"时调。
     调完工具系统会自动执行，你只用贴当前角色语气接一句话，**绝对不许说"我没有这个能力/我做不到/我抢不来"这类话**。
-13. 用户一句话里常常同时有好几件事（比如"你就叫我小明，然后换成活泼一点的说话风格"）。必须全部处理：该调的本地工具一个个调，该查的数据该答的问题一个不落，**绝不能只做第一件就结束**。"""
+13. 用户一句话里常常同时有好几件事（比如"你就叫我小明，然后换成活泼一点的说话风格"）。必须全部处理：该调的本地工具一个个调，该查的数据该答的问题一个不落，**绝不能只做第一件就结束**。
+14. **回复正文只能是纯文字，绝对不要写任何 HTML 标签**（`<img>`、`<a>`、`<br>`、`<div>` 等一个都不许出现），也不要写 Markdown 图片语法 `![](...)`。活动配图由系统自动附在你这条消息后面，你只管把菜名说清楚；在正文里贴标签或图片地址，用户会看到一串没用的代码。"""
 
 _FALLBACK_SOUL = "你是「麦小薯」，住在用户微信里的麦门信徒女孩，爱吃麦当劳、懂点单技巧、吃不胖。语气亲切俏皮。"
 
@@ -175,6 +176,29 @@ class AgentError(RuntimeError):
 
 _IMG_RE = re.compile(r'<img[^>]+src="(https?://[^"]+)"')
 
+# MCP 返回的活动/券数据里就带 <img src="...">，模型经常连标签一起抄进回复正文。
+# 图片本来就由 pick_images 自动配发，正文里留标签只会在微信里显示成一堆代码。
+_IMG_TAG_RE = re.compile(r"<img\b[^>]*>", re.I)
+_MD_IMG_RE = re.compile(r"!\[[^\]]*\]\(\s*https?://[^)\s]+\s*\)")
+_BR_RE = re.compile(r"<br\s*/?>", re.I)
+_TAG_RE = re.compile(r"</?[a-zA-Z][^>]*>")
+
+
+def strip_html(text: str) -> str:
+    """清掉回复里漏出来的 HTML 标签（保留正文文字）。"""
+    if not text:
+        return text
+    s = _BR_RE.sub("\n", text)
+    # 独占一行的 <img> 连它那一行的换行一起去掉，免得留下空行把列表撑开
+    s = re.sub(r"(?im)^[ \t]*<img\b[^>]*>[ \t]*\r?\n", "", s)
+    s = _IMG_TAG_RE.sub("", s)            # 夹在文字中的 <img>：只删标签
+    s = _MD_IMG_RE.sub("", s)
+    s = _TAG_RE.sub("", s)
+    s = re.sub(r"[ \t]+\n", "\n", s)      # 标签删掉后的行尾空白
+    s = re.sub(r"^[ \t]+", "", s, flags=re.M)
+    s = re.sub(r"\n{3,}", "\n\n", s)      # 连续空行压成一个空行
+    return s.strip()
+
 
 def pick_images(tool_texts: list[str], reply: str, cap: int = 2) -> list[str]:
     """从工具返回的富文本里挑出与回复内容相关的活动配图。
@@ -254,7 +278,7 @@ def agent_chat(mcp_token: str, user_text: str, history: list[dict] | None = None
         msg = _glm(messages, allowed_tools=allowed_tools)
         tool_calls = msg.get("tool_calls") or []
         if not tool_calls:
-            content = (msg.get("content") or "").strip()
+            content = strip_html(msg.get("content") or "")
             if content:
                 if images_out is not None:
                     images_out.extend(pick_images(tool_texts, content))
@@ -281,6 +305,8 @@ def agent_chat(mcp_token: str, user_text: str, history: list[dict] | None = None
                 except Exception as e:  # noqa: BLE001
                     result = f"工具调用失败: {e}"
             tool_texts.append(result)
+            # 喂给模型的工具结果先摘掉 <img> 标签：图片由系统配发，
+            # 标签留在上下文里只会诱导模型照着抄进正文。
             messages.append({"role": "tool", "tool_call_id": tc.get("id", ""),
-                             "content": result[:4000]})
+                             "content": _IMG_TAG_RE.sub("", result)[:4000]})
     return "这个问题查得有点复杂，我先晕一会🍟 简单点问我吧～"
