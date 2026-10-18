@@ -1,7 +1,7 @@
 """微信对话指令解析：让用户在 ClawBot 对话框里管理监控。
 
 设计原则（2026-10-17 重构）：
-  1. 一句话可以有好几件事。"叫我小明，然后变作月野兔"必须两件都办。
+  1. 一句话可以有好几件事。"叫我小明，然后换成活泼点的语气"必须两件都办。
      → 先按连接词/标点切成子句，逐句处理。
   2. 只把"标准句式、零歧义"的指令留在脚本快通道里，命中就秒回、不花 token。
      说法稍微绕一点的一律交给 GLM —— 它能看到自己的全部能力
@@ -39,7 +39,7 @@ HELP = (
     "· 查券 —— 我立马去后厨瞅一圈\n"
     "· 领券 —— 全给你塞进卡包\n"
     "· 换头像 —— 换个造型陪你聊天\n"
-    "· 变身 明日香 —— 我秒变动漫角色\n"
+    "· 换个风格 —— 元气/温柔/幽默，都由你定\n"
     "· 随便聊聊 —— 查价/找店/侃大山都行"
 )
 
@@ -83,7 +83,7 @@ _CLAUSE_SEP = re.compile(
 
 
 def _split_clauses(text: str) -> list[str]:
-    """把「叫我小明，然后变作月野兔」切成两个独立子句。
+    """把「叫我小明，然后换成活泼点的语气」切成两个独立子句。
 
     只按连接词和标点机械切分，**不做语义理解**——理解不了的部分原样留给大模型。
     切不出东西（单句/空串）时返回空列表，调用方用原文处理。
@@ -106,12 +106,16 @@ _NICK_BAD = ("什么", "怎么", "啥", "谁", "哪", "如何", "起来", "一�
 
 _COSPLAY_RE = re.compile(
     r"(?:变身为|变作|变身|变成|变为|扮演成|扮演|扮成|饰演|化身成|化身|"
+    r"换成|换作|"
     r"当一下|装成|cosplay|cos)"
     r"\s*(?:成|为|作|一下)?\s*"
     r"([^\s，。！？!?、；;：:]{1,20})", re.I)
 _COSPLAY_TAIL = re.compile(
-    r"(?:吧|呀|呗|哦|嘛|啊|呢|哈|啦|喔|噢|了|看看|试试|好吗|好不好)+$")
+    r"(?:点的语气|点的说话方式|的语气|的说话方式|那种语气|的调调|说话方式|"
+    r"点|吧|呀|呗|哦|嘛|啊|呢|哈|啦|喔|噢|了|看看|试试|好吗|好不好)+$")
 _COSPLAY_STOP = {"", "回来", "回去", "自己", "原样", "一下", "什么", "啥", "个人", "谁"}
+# 这些词属于换头像/换图的语义，别被"换成 X"误当成换说话风格
+_AVATAR_WORDS = ("头像", "图片", "造型", "形象", "照片")
 
 
 def _nickname_target(text: str) -> str | None:
@@ -126,16 +130,18 @@ def _nickname_target(text: str) -> str | None:
 
 
 def _cosplay_target(text: str) -> str | None:
-    """从「你给我变作月野兔吧」里抠出角色名「月野兔」。
+    """从「你给我换成元气少女吧」里抠出风格名「元气少女」。
 
     覆盖 变身/变作/变成/变身为/扮演/扮成/饰演/化身/当一下/装成/cos 等说法，
-    并顺手剥掉尾部的「吧/呀/哦」等语气词（旧版会把「为月野兔」「月野兔吧」整串喂给百科）。
+    并顺手剥掉尾部的「吧/呀/哦」等语气词（旧版会把「为X」「X吧」整串喂给百科）。
     """
     m = _COSPLAY_RE.search(text or "")
     if not m:
         return None
     who = _COSPLAY_TAIL.sub("", m.group(1).strip()).strip()
     if who in _COSPLAY_STOP:
+        return None
+    if any(w in who for w in _AVATAR_WORDS):  # 「换成头像/图片」是换造型，不是换风格
         return None
     return who
 
@@ -504,14 +510,33 @@ def _cosplay_start(store: Store, user_id: int, query: str):
     """变身第一步：搜候选 → 报全名让用户核对，防止认错角色。"""
     import json
     from .cosplay import fetch_extract, is_disambiguation, search_candidates
+    from .cosplay import distill_style, looks_like_style
+
+    # 先判"风格词"：说「元气/温柔/幽默」这类调调时不用查百科，
+    # 直接造一张纯风格卡（百科是全文搜索，会搜出同名游戏角色把人带偏）。
+    if looks_like_style(query):
+        card = distill_style(query)
+        if card:
+            store.set_persona(user_id, card)
+            yield (f"好嘞，「{query}」的说话风格我拿捏住了🎭\n\n"
+                   f"{card}\n\n想让我变回麦小薯，随时发「变回来」～")
+            return
+
     yield f"🔍 我去翻翻资料，找找「{query}」是谁……"
     candidates = search_candidates(query)
     if not candidates:
-        yield (f"百科里没查到「{query}」这个角色诶😅 是不是打错字啦？"
-               f"换个写法试试，比如带上作品名：「变身 EVA明日香」")
+        # 百科没收录 —— 也当成风格词兜底，别把用户挡在门外。
+        card = distill_style(query)
+        if card:
+            store.set_persona(user_id, card)
+            yield (f"「{query}」不是某位具体角色，那我按这个风格来调调子～\n\n"
+                   f"{card}\n\n想让我变回麦小薯，随时发「变回来」～")
+        else:
+            yield (f"「{query}」这个说法我没太琢磨明白😅 换个说法再试试？\n"
+                   f"比如「换成元气点的语气」，或者说一位动漫角色的名字，我带作品名去查。")
         return
     title = candidates[0]
-    # "带作品名"的查询（如「美少女战士月野兔」「EVA明日香」）首位常命中作品页，
+    # "带作品名"的查询（如「某作品某角色」）首位常命中作品页，
     # 优先取 query 的后缀候选——那才是角色本体。
     for c in candidates:
         if len(c) < len(query) and query.endswith(c):
