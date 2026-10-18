@@ -98,7 +98,7 @@
              border:2px solid var(--yellow); background:#fff; }
 
   /* ---------- 大脑便签：对话演示下方的技术注解 ---------- */
-  .llm-note { max-width:400px; margin:20px auto 0; background:#FFFBEF;
+  .llm-note { max-width:460px; margin:0 auto 16px; background:#FFFBEF;
           border:2px dashed rgba(255,199,44,.75); border-radius:20px;
           padding:14px 18px; display:flex; gap:11px; align-items:flex-start;
           box-sizing:border-box; box-shadow:0 6px 16px rgba(0,0,0,.045); }
@@ -127,6 +127,50 @@
   footer { text-align:center; color:#a89e8d; font-size:13px; padding:44px 16px 54px;
            line-height:1.9; }
   footer .sign { font-size:15px; color:#8b8172; }
+
+  /* ---------- 游客聊天框 ---------- */
+  .guest-chat { max-width:460px; margin:0 auto; background:#fff; border-radius:26px;
+                box-shadow:0 12px 34px rgba(0,0,0,.10); border:3px solid #F1E8D8;
+                overflow:hidden; }
+  .gc-head { display:flex; align-items:center; gap:12px; padding:14px 18px;
+             background:linear-gradient(135deg,#FFF3D6,#FFE9F0); border-bottom:2px dashed #F3E3B8; }
+  .gc-head img { width:46px; height:46px; border-radius:50%; border:2.5px solid var(--yellow);
+                 object-fit:cover; background:#fff; }
+  .gc-head b { font-size:16px; display:block; }
+  .gc-head span { font-size:12px; color:#8b8172; }
+  .gc-body { height:320px; overflow-y:auto; padding:16px 14px; background:#FFFCF5; }
+  .gc-msg { display:flex; gap:8px; margin-bottom:12px; align-items:flex-start; }
+  .gc-msg img { flex:none; width:32px; height:32px; border-radius:50%;
+                border:2px solid var(--yellow); object-fit:cover; background:#fff; }
+  .gc-msg div { border-radius:16px; padding:9px 13px; font-size:14px; line-height:1.7;
+                max-width:82%; white-space:pre-wrap; word-break:break-word; }
+  .gc-msg.bot div { background:#F5F1E8; border-bottom-left-radius:6px; }
+  .gc-msg.user { justify-content:flex-end; }
+  .gc-msg.user div { background:#95EC69; border-bottom-right-radius:6px; }
+  .gc-msg.bot.typing div { color:#b0a79a; font-style:italic; }
+  .gc-input { display:flex; gap:8px; padding:12px 14px; border-top:2px dashed #F3E3B8; }
+  .gc-input input { flex:1; padding:11px 16px; border:2px solid #eee; border-radius:999px;
+                    font-size:14px; outline:none; }
+  .gc-input input:focus { border-color:var(--yellow); }
+  .gc-input button { background:linear-gradient(180deg,#FFDF6B,var(--yellow)); border:none;
+                     border-bottom:3px solid #D9A400; color:var(--dark); font-weight:800;
+                     padding:0 22px; border-radius:999px; font-size:14px; cursor:pointer; }
+  .gc-input button:active { transform:translateY(2px); border-bottom-width:1px; }
+
+  /* ---------- 游客提示通栏（醒目 CTA 带） ---------- */
+  .gc-banner { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+               gap:8px; max-width:640px; margin:18px auto 0; padding:14px 24px;
+               border-radius:18px; text-decoration:none;
+               background:linear-gradient(95deg,var(--red) 0%,#F0541E 55%,#FF8A00 100%);
+               color:#fff; box-shadow:0 8px 22px rgba(218,41,28,.30);
+               position:relative; overflow:hidden; transition:transform .15s; }
+  .gc-banner:hover { transform:translateY(-2px) scale(1.01); }
+  .gc-banner::after { content:""; position:absolute; inset:0;
+               background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.35) 50%,transparent 65%);
+               background-size:250% 250%; animation:banner-sheen 3s ease-in-out infinite; }
+  @keyframes banner-sheen { 0%,100%{background-position:120% 0} 50%{background-position:-20% 0} }
+  .gb-left { font-size:13px; opacity:.92; }
+  .gb-right { font-size:15px; font-weight:800; letter-spacing:.5px; }
 </style>
 </head>
 <body>
@@ -157,6 +201,37 @@
 
 <section>
   <div class="sec-title">
+    <div class="pill"><span class="deco">💬</span>先别走，<span class="hl">跟她聊两句</span><span class="deco">🍟</span></div>
+  </div>
+  <div class="llm-note">
+    <span class="brain">🎓</span>
+    <p><b>智谱 GLM-5.3-Flash</b> 就是她的小脑袋。你念叨一长串也好、随手甩一句指令也好，她都稳稳 get 到你的意思，<span class="hl">绝不装傻糊弄你</span>🐰</p>
+  </div>
+  <div class="guest-chat">
+    <div class="gc-head">
+      <img src="/static/img/cards/web/face/03_fries_hand.webp" alt="麦小薯"
+           onerror="this.onerror=null;this.src='/static/img/cards/thumbs/03_fries_hand.png'">
+      <div><b>百变麦小薯</b><span>在线 · 不用注册，直接聊</span></div>
+    </div>
+    <div class="gc-body" id="gcBody">
+      <div class="gc-msg bot"><img src="/static/img/cards/web/face/03_fries_hand.webp" alt=""
+           onerror="this.onerror=null;this.src='/static/img/cards/thumbs/03_fries_hand.png'">
+        <div>嗨呀，我是麦小薯🍟 问我「最近有什么优惠」「麦香鱼多少钱」都行，或者说「变身 明日香」看我变个身～</div>
+      </div>
+    </div>
+    <div class="gc-input">
+      <input id="gcInput" placeholder="跟她聊点什么……（游客每天 10 轮）" maxlength="400">
+      <button id="gcSend">发送</button>
+    </div>
+  </div>
+  <a class="gc-banner" href="/onboard">
+    <span class="gb-left">🎁 游客额度是作者免费开放的 · 每 IP 每天 10 轮</span>
+    <span class="gb-right">开通你的专属麦小薯，微信里 7×24 帮你蹲优惠 <b>→</b></span>
+  </a>
+</section>
+
+<section>
+  <div class="sec-title">
     <div class="pill"><span class="deco">🍟</span>百变麦小薯，是<span class="hl">怎样的她</span><span class="deco">🍟</span></div>
   </div>
   <div class="cards">
@@ -168,25 +243,6 @@
       <p>吐槽老板、汇报摸鱼、分享今天的离谱事——她都接得住，还会讲冷笑话。每天聊满两轮算打卡，集齐造型卡，解锁她的新皮肤。</p></div>
     <div class="card"><div class="ic">🎓</div><h3>喜好，记在心上</h3>
       <p>你吃不吃辣、雪糕爱香草还是抹茶、咖啡要冰美式还是热拿铁——聊过的她都记得。下次推荐，句句都是为你量身挑的，而不是群发广告。</p></div>
-  </div>
-</section>
-
-<section>
-  <div class="sec-title">
-    <div class="pill"><span class="deco">💬</span>真实对话<span class="hl">长这样</span><span class="deco">💬</span></div>
-  </div>
-  <div class="phone">
-    <div class="notch"></div>
-    <div class="who">百变麦小薯 · 微信</div>
-    <div class="msg user">关注 麦香鱼</div>
-    <div class="msg bot"><img class="face" src="/static/img/cards/web/face/03_fries_hand.webp" alt="" width="30" height="30" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/img/cards/thumbs/03_fries_hand.png'">✅ 已关注「麦香鱼」，有它的优惠我立刻喊你～</div>
-    <div class="msg user">麦香鱼多少钱？我在中山轻轨站附近</div>
-    <div class="msg bot"><img class="face" src="/static/img/cards/web/face/03_fries_hand.webp" alt="" width="30" height="30" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/img/cards/thumbs/03_fries_hand.png'">查到啦！🐟 麦香鱼在附近餐厅（约3.2km）¥22.00，目前没有额外优惠，继续帮你盯着～</div>
-    <div class="msg bot"><img class="face" src="/static/img/cards/web/face/03_fries_hand.webp" alt="" width="30" height="30" loading="lazy" decoding="async" onerror="this.onerror=null;this.src='/static/img/cards/thumbs/03_fries_hand.png'">🎉 蹲到了！「中薯条买一送一」可领取，与你的关注「薯条」相关，要我一键领券吗？</div>
-  </div>
-  <div class="llm-note">
-    <span class="brain">🎓</span>
-    <p><b>智谱 GLM-5.3-Flash</b> 就是她的小脑袋。你念叨一长串也好、随手甩一句指令也好，她都稳稳 get 到你的意思，<span class="hl">绝不装傻糊弄你</span>🐰</p>
   </div>
 </section>
 
@@ -215,6 +271,53 @@
   基于麦当劳官方 MCP 能力构建 · 1024 程序员节参赛作品<br>
   本项目与麦当劳中国的合作仅限官方开放平台能力调用
 </footer>
+
+<script>
+const gcBody = document.getElementById("gcBody");
+const gcInput = document.getElementById("gcInput");
+const gcSend = document.getElementById("gcSend");
+const gcHistory = [];
+const GC_FACE = '<img src="/static/img/cards/web/face/03_fries_hand.webp" alt=""'
+  + ' onerror="this.onerror=null;this.src=\'/static/img/cards/thumbs/03_fries_hand.png\'">';
+
+function gcAdd(role, text) {
+  const d = document.createElement("div");
+  d.className = "gc-msg " + role;
+  d.innerHTML = (role === "bot" ? GC_FACE : "") + "<div></div>";
+  d.querySelector("div").textContent = text;
+  gcBody.appendChild(d);
+  gcBody.scrollTop = gcBody.scrollHeight;
+  return d;
+}
+
+async function gcSendMsg() {
+  const text = gcInput.value.trim();
+  if (!text) return;
+  gcInput.value = "";
+  gcSend.disabled = true;
+  gcAdd("user", text);
+  const typing = gcAdd("bot", "正在翻后厨……🍟");
+  typing.classList.add("typing");
+  try {
+    const r = await fetch("/api/guest-chat", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({text, history: gcHistory})
+    });
+    const d = await r.json();
+    typing.remove();
+    gcAdd("bot", d.reply || "😵 脑子卡住了，再问一次试试～");
+    gcHistory.push({role: "user", content: text},
+                   {role: "assistant", content: d.reply || ""});
+  } catch (e) {
+    typing.remove();
+    gcAdd("bot", "😵 网络打了个嗝，再发一次试试～");
+  }
+  gcSend.disabled = false;
+  gcInput.focus();
+}
+gcSend.onclick = gcSendMsg;
+gcInput.addEventListener("keydown", e => { if (e.key === "Enter") gcSendMsg(); });
+</script>
 
 </body>
 </html>

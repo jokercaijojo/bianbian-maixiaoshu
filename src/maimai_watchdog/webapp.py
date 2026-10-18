@@ -335,6 +335,37 @@ async def qr_status(sid: str) -> dict:
     return {"status": sess["status"]}
 
 
+# ---- 游客体验区 ----
+GUEST_TOOLS = ["campaign-calendar", "available-coupons", "query-nearby-stores",
+               "query-meals", "calculate-price", "now-time-info"]
+GUEST_RULES = """【游客体验模式】
+1. 对方是没注册的网页访客，只能查不能领：不要调用领券/账户类工具（也没有）。
+2. 回答活泼简短，两三句内带一个"开通钩子"（如"开通我以后天天帮你盯"）。
+3. 绝不答应帮游客领券、下单、查账户——那些是开通后的专属服务；
+   游客说"帮我领券"时，正面回答：领券是开通后的专属功能，引导开通。"""
+
+
+class GuestChatIn(BaseModel):
+    text: str = Field(min_length=1, max_length=400)
+    history: list[dict] = Field(default_factory=list, max_length=6)
+
+
+@app.post("/api/guest-chat")
+def guest_chat(body: GuestChatIn, request: Request) -> dict:
+    import datetime
+    ip = request.client.host if request.client else "unknown"
+    day = datetime.date.today().isoformat()
+    if not store.consume_guest_quota(ip, day):
+        return {"reply": "今天聊得够多啦😋 开通我的话，每天能聊 100 轮，"
+                         "还能帮你蹲券领券～点上面「开始开通」就行！", "limited": True}
+    from .agent import agent_chat
+    images: list[str] = []
+    reply = agent_chat(os.environ["MCD_MCP_TOKEN"], body.text,
+                       history=body.history[-6:], images_out=images,
+                       allowed_tools=GUEST_TOOLS, extra_rules=GUEST_RULES)
+    return {"reply": reply, "images": images[:1], "limited": False}
+
+
 # ---- 静态页面 ----
 @app.get("/api/cards")
 def user_cards(user_id: int | None = None, s: str = "") -> dict:

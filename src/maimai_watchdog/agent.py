@@ -200,7 +200,8 @@ def pick_images(tool_texts: list[str], reply: str, cap: int = 2) -> list[str]:
 
 
 def _glm(messages: list[dict], tools: bool = True,
-         max_tokens: int = MAX_OUTPUT_TOKENS, temperature: float = 0.5) -> dict:
+         max_tokens: int = MAX_OUTPUT_TOKENS, temperature: float = 0.5,
+         allowed_tools: list[str] | None = None) -> dict:
     key = os.environ.get("ZHIPU_API_KEY", "")
     if not key:
         raise AgentError("未配置 ZHIPU_API_KEY")
@@ -209,7 +210,10 @@ def _glm(messages: list[dict], tools: bool = True,
                      # glm-5.x 不支持关闭思考，low 档省 token 又不影响工具调用
                      "thinking": {"type": "enabled", "effort": "low"}}
     if tools:
-        payload["tools"] = TOOLS
+        tl = TOOLS
+        if allowed_tools is not None:
+            tl = [t for t in TOOLS if t["function"]["name"] in allowed_tools]
+        payload["tools"] = tl
     body = json.dumps(payload).encode()
     req = urllib.request.Request(ZHIPU_URL, data=body, method="POST")
     req.add_header("Authorization", f"Bearer {key}")
@@ -223,23 +227,28 @@ def agent_chat(mcp_token: str, user_text: str, history: list[dict] | None = None
                trace: list[str] | None = None, memory_text: str = "",
                images_out: list[str] | None = None,
                persona_card: str = "",
-               local_out: list[dict] | None = None) -> str:
+               local_out: list[dict] | None = None,
+               allowed_tools: list[str] | None = None,
+               extra_rules: str = "") -> str:
     """带工具调用的对话。
 
     trace     记录工具轨迹；
     images_out 收集相关活动配图 URL；
     local_out  收集模型主动调用的"本地能力"（变身/换头像/记称呼），
                由调用方（chat.py）在回复发出后按顺序执行。
+    allowed_tools 限制工具范围（游客模式）；extra_rules 追加场景规则。
     """
     client = McdMcpClient(mcp_token)
-    messages = [{"role": "system", "content": build_system_prompt(
-        user_text, memory_text, persona_card)}]
+    prompt = build_system_prompt(user_text, memory_text, persona_card)
+    if extra_rules:
+        prompt += "\n" + extra_rules
+    messages = [{"role": "system", "content": prompt}]
     messages.extend((history or [])[-4:])
     messages.append({"role": "user", "content": user_text})
     tool_texts: list[str] = []
 
     for _ in range(MAX_ROUNDS):
-        msg = _glm(messages)
+        msg = _glm(messages, allowed_tools=allowed_tools)
         tool_calls = msg.get("tool_calls") or []
         if not tool_calls:
             content = (msg.get("content") or "").strip()

@@ -66,6 +66,12 @@ CREATE TABLE IF NOT EXISTS events (
     user_id INTEGER,
     ts REAL
 );
+CREATE TABLE IF NOT EXISTS guest_usage (
+    ip TEXT NOT NULL,
+    day TEXT NOT NULL,
+    count INTEGER DEFAULT 0,
+    PRIMARY KEY (ip, day)
+);
 CREATE TABLE IF NOT EXISTS user_facts (
     user_id INTEGER NOT NULL,
     fact_key TEXT NOT NULL,
@@ -421,6 +427,23 @@ class Store:
         return [r[0] for r in self.conn.execute(
             "SELECT card_id FROM unlocks WHERE user_id=? ORDER BY unlocked_at",
             (user_id,)).fetchall()]
+
+    # ---- 游客体验区（按 IP 限流）----
+    GUEST_DAILY_LIMIT = 10
+
+    def consume_guest_quota(self, ip: str, day: str) -> bool:
+        row = self.conn.execute(
+            "SELECT count FROM guest_usage WHERE ip=? AND day=?",
+            (ip, day)).fetchone()
+        count = row[0] if row else 0
+        if count >= self.GUEST_DAILY_LIMIT:
+            return False
+        self.conn.execute(
+            "INSERT INTO guest_usage(ip, day, count) VALUES (?,?,1)"
+            " ON CONFLICT(ip, day) DO UPDATE SET count=count+1",
+            (ip, day))
+        self.conn.commit()
+        return True
 
     # ---- 运营统计 ----
     def log_event(self, type_: str, user_id: int | None = None) -> None:
